@@ -1,0 +1,102 @@
+#!/bin/sh
+
+##############################
+#
+# Standard Compile Script 
+#
+# Supported compilers: 
+#   gcc, g++, and gpc.
+#
+##############################
+
+export C_COMPILER=/usr/bin/gcc
+export CPLUSPLUS_COMPILER=/usr/bin/g++
+export PASCAL_COMPILER=/usr/bin/gpc
+
+export C_OPTIONS="-O2 -Wall"
+export CPLUSPLUS_OPTIONS="-O2 -Wall"
+export PASCAL_OPTIONS="-O2 -Wall"
+
+# Check for the correct number of arguments. Otherwise, print usage.
+if [ $# -eq 0 -o $# -gt 4 ]
+then
+    echo "Usage: $0 <language> [<source-file>] [<output-file>] [<message-file>]"
+    echo
+    echo "<source-file>  is defaulted to \"source\"."
+    echo "<output-file>  is defaulted to \"a.out\"."
+    echo "<message-file> is defaulted to \"compiler_message\"."
+    echo
+    exit 127
+fi
+
+# Retrieve the arguments.
+if [ $# -ge 1 ]
+then
+    export PROG_LANG=$1
+    echo "programming language: ${PROG_LANG}"
+fi
+
+if [ $# -ge 2 ]
+then
+    export SOURCE_FILE=$2
+else
+    export SOURCE_FILE=source
+fi
+echo "         source file: $SOURCE_FILE"
+
+if [ $# -ge 3 ]
+then
+    export OUTPUT_FILE=$3
+else
+    export OUTPUT_FILE=a.out
+fi
+echo "         output file: $OUTPUT_FILE"
+
+if [ $# -eq 4 ]
+then
+    export MESSAGE_FILE=$4
+else
+    export MESSAGE_FILE=compiler_message
+fi
+echo "        message file: $MESSAGE_FILE"
+
+echo
+
+# Remove any remaining output files or message files.
+rm -Rf $OUTPUT_FILE
+rm -Rf $MESSAGE_FILE
+
+# Check if the source file exists before attempt compiling.
+if [ ! -f $SOURCE_FILE ]
+then
+    echo "ERROR: The source file does not exist!"
+    echo "ERROR: The source file did not exist." > $MESSAGE_FILE
+    exit 127
+fi
+
+# Compile.
+if [ $PROG_LANG = "c" ]
+then
+    $C_COMPILER $C_OPTIONS -o $OUTPUT_FILE $SOURCE_FILE 2>$MESSAGE_FILE
+elif [ $PROG_LANG = "c++" ]
+then
+    $CPLUSPLUS_COMPILER $CPLUSPLUS_OPTIONS -o $OUTPUT_FILE $SOURCE_FILE 2>$MESSAGE_FILE
+elif [ $PROG_LANG = "pascal" ]
+then
+    $PASCAL_COMPILER $PASCAL_OPTIONS -o $OUTPUT_FILE $SOURCE_FILE 2>$MESSAGE_FILE
+else
+    echo "ERROR: Invalid language specified!"
+    echo "ERROR: Invalid language specified!" > $MESSAGE_FILE
+    exit 127
+fi
+
+# Report success or failure.
+if [ -f $OUTPUT_FILE ]
+then
+    echo "Compilation was successful!"    
+else
+    echo "ERROR: Something was wrong during the compilation!"
+    echo "Dumping compiler message:"
+    echo
+    cat $MESSAGE_FILE
+fi
