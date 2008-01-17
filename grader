@@ -86,7 +86,7 @@ GRADER_ENV = 'exam'
 if ARGV.length > 1
   GRADER_ENV = ARGV[1]
 end
-require "environment.rb"
+require File.dirname(__FILE__) + "/environment.rb"
 
 #main program
 

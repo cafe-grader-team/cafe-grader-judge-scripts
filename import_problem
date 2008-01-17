@@ -35,7 +35,7 @@ def process_options(options)
   end
 end
 
-GRADER_DIR = "/home/jittat/grader/grader_ng"
+GRADER_DIR = File.dirname(__FILE__)
 
 # print usage
 if ARGV.length < 3
