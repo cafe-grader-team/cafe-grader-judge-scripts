@@ -5,8 +5,8 @@ problem do
   mem_limit_each <%= options[:mem_limit] %>
   score_each 10
 
-<% 1.upto(num_testcase) do |i| %>
-  run <%= i %>
+<% 1.upto(num_testcases) do |i| %>
+  run <%= i %> do
     tests <%= i %>
   end
 <% end %>

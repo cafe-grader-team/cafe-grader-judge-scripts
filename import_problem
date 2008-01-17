@@ -70,7 +70,7 @@ end
 # generating all_tests.cfg
 puts "generating testcase config file"
 
-template = File.open("all_tests.cfg.erb").readlines
+template = File.open(File.dirname(__FILE__) + "/all_tests.cfg.erb").read
 all_test_cfg = ERB.new(template)
 
 cfg_file = File.open("#{problem}/test_cases/all_tests.cfg","w")
