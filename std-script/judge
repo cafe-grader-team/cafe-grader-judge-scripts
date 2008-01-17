@@ -71,7 +71,7 @@ execute("#{problem_home}/script/compile #{language} #{source_file}", "Compilatio
 compile_message = `cat compiler_message`
 compile_message.strip!
 execute("mv compiler_message #{test_result_dir}", "Cannot move the compiler message to #{test_result_dir}.")
-if compile_message != ""
+if !FileTest.exist?("a.out")
   puts "Cannot compile the source code. See message in #{test_result_dir}/compile_message"
   exit(127)
 else

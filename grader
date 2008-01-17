@@ -98,12 +98,14 @@ require RAILS_APP_DIR + '/config/environment'
 current_dir = `pwd`
 
 talk 'Grader queue'
-task = Task.find(:first, :order => 'created_at')
-if task!=nil 
-  grade(task.submission_id)
-  task.destroy
-else
-  puts "No job"
+while true
+  task = Task.find(:first, :order => 'created_at')
+  if task!=nil 
+    grade(task.submission_id)
+    task.destroy
+  else
+    sleep(1)
+  end
 end
 
 

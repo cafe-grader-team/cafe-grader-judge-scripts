@@ -1,0 +1,13 @@
+problem do
+  num_tests <%= num_testcases %>
+  full_score <%= num_testcases*10 %>
+  time_limit_each <%= options[:time_limit] %>
+  mem_limit_each <%= options[:mem_limit] %>
+  score_each 10
+
+<% 1.upto(num_testcase) do |i| %>
+  run <%= i %>
+    tests <%= i %>
+  end
+<% end %>
+end
