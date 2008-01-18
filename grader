@@ -21,6 +21,8 @@ end
 
 def call_judge(problem_home,language,problem_out_dir,fname)
   ENV['PROBLEM_HOME'] = problem_home
+
+  puts problem_out_dir
   Dir.chdir problem_out_dir
   cmd = "#{problem_home}/script/judge #{language} #{fname}"
 #  puts "CMD: #{cmd}"
@@ -29,13 +31,21 @@ end
 
 def read_result(test_result_dir)
   cmp_msg_fname = "#{test_result_dir}/compiler_message"
-  cmp_msg = File.open(cmp_msg_fname).read
+  cmp_file = File.open(cmp_msg_fname)
+  cmp_msg = cmp_file.read
+  cmp_file.close
 
   result_fname = "#{test_result_dir}/result"
   comment_fname = "#{test_result_dir}/comment"  
   if FileTest.exist?(result_fname)
-    result = File.open(result_fname).readline.to_i
-    comment = File.open(comment_fname).readline.chomp
+    result_file = File.open(result_fname)
+    result = result_file.readline.to_i
+    result_file.close
+
+    comment_file = File.open(comment_fname)
+    comment = comment_file.readline.chomp
+    comment_file.close
+
     return {:points => result, 
       :comment => comment, 
       :cmp_msg => cmp_msg}
@@ -47,14 +57,21 @@ def read_result(test_result_dir)
 end
 
 def save_result(submission,result)
+  problem = Problem.find(submission.problem_id)
   submission.graded_at = Time.now
   submission.points = result[:points]
-  submission.grader_comment = report_comment(result[:comment])
+  if submission.points == problem.full_score
+    submission.grader_comment = 'PASSED: ' + report_comment(result[:comment])
+  else
+    submission.grader_comment = 'FAILED: ' + report_comment(result[:comment])
+  end
   submission.compiler_message = result[:cmp_msg]
   submission.save
 end
 
 def grade(submission_id)
+  current_dir = `pwd`.chomp
+
   sub = Submission.find(submission_id)
   user = sub.user
   problem = sub.problem
@@ -79,10 +96,12 @@ def grade(submission_id)
   save_source(sub,problem_out_dir,source_name)
   call_judge(problem_home,language,problem_out_dir,source_name)
   save_result(sub,read_result("#{problem_out_dir}/test-result"))
+
+  Dir.chdir(current_dir)
 end
 
 def stop_grader
-  File.open(File.dirname(__FILE__) + '/stop','w')
+  File.open(File.dirname(__FILE__) + '/stop','w').close
 end
 
 def check_stopfile
@@ -120,8 +139,6 @@ talk 'Reading rails environment'
 
 RAILS_ENV = 'development'
 require RAILS_APP_DIR + '/config/environment'
-
-current_dir = `pwd`
 
 talk 'Grader queue'
 while true

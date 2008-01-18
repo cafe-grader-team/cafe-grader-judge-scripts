@@ -72,6 +72,10 @@ report = lambda{ |status, points, comment|
   `rm output.txt`
 
   comment_file.write comment
+  comment_file.write "--run-result--\n"
+  run_result.each do |l|
+    comment_file.write l
+  end
   comment_file.close
 
   puts 
