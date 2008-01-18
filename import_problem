@@ -57,7 +57,7 @@ puts "creating directories"
 system("mkdir #{problem}")
 system("mkdir #{problem}/script")
 system("mkdir #{problem}/test_cases")
-system("cp #{GRADER_DIR}/std-script/* #{problem}/script")
+#system("cp #{GRADER_DIR}/std-script/* #{problem}/script")
 
 puts "copying testcases"
 
