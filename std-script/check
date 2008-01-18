@@ -48,6 +48,9 @@ report_wrong = lambda {
 puts "YOU HAVE TO EDIT THE CHECKING CODE HERE: #{__FILE__}"
 exit(127)
 
+# below are codes for checking integer and text
+
+########### THIS IS FOR CHECKING INTEGER ##########
 num_pattern = /^[0-9]*/
 if (output_file_content =~ num_pattern) == nil
   report_wrong.call
@@ -60,4 +63,22 @@ if output_i == answer_i
   report_correct.call
 else 
   report_wrong.call
+end
+
+########### THIS IS FOR CHECKING TEXT ##########
+
+# check visible text
+
+out_items = output_file_content.split
+ans_items = answer_file_content.split
+
+if out_items.length != ans_items.length
+  report_wrong.call
+else
+  out_items.length.times do |i|
+    if out_items[i]!=ans_items[i]
+      report_wrong.call
+    end
+  end
+  report_correct.call
 end
