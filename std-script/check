@@ -44,6 +44,10 @@ report_wrong = lambda {
 ##################
 # Your code here #
 ##################
+
+puts "YOU HAVE TO EDIT THE CHECKING CODE HERE: #{__FILE__}"
+exit(127)
+
 num_pattern = /^[0-9]*/
 if (output_file_content =~ num_pattern) == nil
   report_wrong.call
