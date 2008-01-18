@@ -71,7 +71,7 @@ end
 
 def copy_script(problem_home)
   script_dir = "#{problem_home}/script"
-  std_script_dir = File.dirname(__FILE__) + '/std-scripts'
+  std_script_dir = File.dirname(__FILE__) + '/std-script'
   scripts = Dir[std_script_dir + '/*']
   
   copied = []
@@ -87,7 +87,7 @@ def copy_script(problem_home)
   return copied
 end
 
-def clear_script(problem_home,log)
+def clear_script(log,problem_home)
   log.each do |s|
     system("rm #{problem_home}/script/#{s}")
   end
