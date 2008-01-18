@@ -81,15 +81,41 @@ def grade(submission_id)
   save_result(sub,read_result("#{problem_out_dir}/test-result"))
 end
 
-# reading environment
-GRADER_ENV = 'exam'
-if ARGV.length > 1
-  GRADER_ENV = ARGV[1]
+def stop_grader
+  File.open(File.dirname(__FILE__) + '/stop','w')
 end
+
+def check_stopfile
+  FileTest.exist?(File.dirname(__FILE__) + '/stop')
+end
+
+def clear_stopfile
+  system("rm " + File.dirname(__FILE__) + '/stop')
+end
+
+# reading environment and options
+if (ARGV.length >= 1) and (ARGV[0]=='stop')
+  stop_grader
+  puts "stop file created"
+  exit(0)
+end
+
+if check_stopfile
+  puts "stop file exists"
+  clear_stopfile
+  exit(0)
+end
+
+if ARGV.length >= 1
+  GRADER_ENV = ARGV[0]
+else
+  GRADER_ENV = 'exam'
+end
+
+puts "environment: #{GRADER_ENV}"
 require File.dirname(__FILE__) + "/environment.rb"
 
 #main program
-
 talk 'Reading rails environment'
 
 RAILS_ENV = 'development'
@@ -99,6 +125,12 @@ current_dir = `pwd`
 
 talk 'Grader queue'
 while true
+  if check_stopfile    # created by calling grader stop
+    clear_stopfile
+    puts "stopped"
+    exit(0)
+  end
+
   task = Task.find(:first, :order => 'created_at')
   if task!=nil 
     grade(task.submission_id)
