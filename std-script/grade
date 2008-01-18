@@ -28,6 +28,7 @@ all_comment = ''
   run = problem.runs[k]
   run_score = 0
   run_comment = ''
+  run_comment_short = ''
   run.tests.each do |test_num|
     result_file_name = "#{test_num}/result"
     if not File.exists?(result_file_name)
@@ -38,11 +39,8 @@ all_comment = ''
     result_file = File.new(result_file_name, "r")
     result_file_lines = result_file.readlines
     run_score = run_score + result_file_lines[1].to_i
-#    run_comment += char_comment(result_file_lines[0])
-    result_file_lines.each do |l|
-      run_comment += l
-    end
-    run_comment += "----\n"
+    run_comment += result_file_lines[0]
+    run_comment_short += char_comment(result_file_lines[0])
     result_file.close
   end
   
@@ -56,7 +54,7 @@ all_comment = ''
   run_comment_file.close
 
   all_score = all_score + run_score
-  all_comment += run_comment
+  all_comment += run_comment_short
 end
 
 result_file = File.new("result", "w")

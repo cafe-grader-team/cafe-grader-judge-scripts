@@ -69,7 +69,7 @@ report = lambda{ |status, points, comment|
   result_file.write "\n"
   result_file.close 
   `rm run_result`
-  `rm output.txt`
+  # `rm output.txt`   --- keep the output
 
   comment_file.write comment
   comment_file.write "--run-result--\n"

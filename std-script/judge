@@ -96,6 +96,7 @@ end
   execute("mkdir #{test_result_dir}/#{test_num}", "Cannot create directory #{test_result_dir}/#{test_num}")
   execute("mv #{sandbox_dir}/result #{test_result_dir}/#{test_num}", "Cannot copy the result file into #{test_result_dir}/#{test_num}")
   execute("mv #{sandbox_dir}/comment #{test_result_dir}/#{test_num}", "Cannot copy the comment file into #{test_result_dir}/#{test_num}")
+  execute("mv #{sandbox_dir}/output.txt #{test_result_dir}/#{test_num}", "Cannot copy the output file into #{test_result_dir}/#{test_num}")
   execute("rm -Rf #{sandbox_dir}/*", "Cannot clear #{sandbox_dir}")
 end
 
