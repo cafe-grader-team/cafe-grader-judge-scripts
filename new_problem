@@ -1,26 +1,13 @@
 #!/usr/bin/ruby
 
-# import_problem:
+# new_problem:
 #  * creates a directory for a problem in the current directory,
-#  * copy testdata in the old format and create standard testcase config file
+#  * create standard testcase config file
 
 require 'erb'
 
-def input_filename(dir,i)
-  "#{dir}/input-#{i}.txt"
-end
-
-def answer_filename(dir,i)
-  "#{dir}/answer-#{i}.txt"
-end
-
-def copy_testcase(importing_test_dir,dir,i)
-  system("cp #{importing_test_dir}/#{i}.in #{input_filename(dir,i)}")
-  system("cp #{importing_test_dir}/#{i}.sol #{answer_filename(dir,i)}")
-end
-
 def process_options(options)
-  i = 3
+  i = 2
   while i<ARGV.length
     if ARGV[i]=='-t'
       options[:time_limit] = ARGV[i+1].to_i if ARGV.length>i+1
@@ -37,15 +24,14 @@ end
 GRADER_DIR = File.dirname(__FILE__)
 
 # print usage
-if ARGV.length < 3
-  puts "using: import_task problem importing_testcase_dir number_of_testcase [options]"
+if ARGV.length < 2
+  puts "using: new_problem problem number_of_testcase [options]"
   exit(127)
 end
 
 # processing arguments
 problem = ARGV[0]
-testcase_dir = ARGV[1]
-num_testcases = ARGV[2].to_i
+num_testcases = ARGV[1].to_i
 
 options = {:time_limit => 1,  :mem_limit => 16}
 process_options(options)
@@ -56,15 +42,12 @@ puts "creating directories"
 system("mkdir #{problem}")
 system("mkdir #{problem}/script")
 system("mkdir #{problem}/test_cases")
-#system("cp #{GRADER_DIR}/std-script/* #{problem}/script")
 
-puts "copying testcases"
+puts "creating testcases directories"
 
 1.upto(num_testcases) do |i|
   system("mkdir #{problem}/test_cases/#{i}")
-  copy_testcase("#{testcase_dir}","#{problem}/test_cases/#{i}",i)
 end
-
 
 # generating all_tests.cfg
 puts "generating testcase config file"
