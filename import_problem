@@ -38,7 +38,11 @@ GRADER_DIR = File.dirname(__FILE__)
 
 # print usage
 if ARGV.length < 3
-  puts "using: import_task problem importing_testcase_dir number_of_testcase [options]"
+  puts "using: import_problem prob_name importing_testcase_dir num_of_testcase [options]
+  * creates a directory for a problem in the current directory,
+  * copy testdata in the old format and create standard testcase config file
+  * options: -t time-limit (in seconds)
+             -m memory-limit (in megabytes)"
   exit(127)
 end
 
