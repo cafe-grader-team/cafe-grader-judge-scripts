@@ -25,7 +25,13 @@ GRADER_DIR = File.dirname(__FILE__)
 
 # print usage
 if ARGV.length < 2
-  puts "using: new_problem problem number_of_testcase [options]"
+  puts <<USAGE 
+using: new_problem problem number_of_testcase [options]
+* creates a directory for a problem in the current directory,
+* create standard testcase config file
+* options: -t time-limit (in seconds)
+           -m mem-limit (in MB)
+USAGE
   exit(127)
 end
 
