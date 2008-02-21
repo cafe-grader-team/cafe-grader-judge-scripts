@@ -111,7 +111,7 @@ def grade(submission_id)
   user_dir = "#{USER_RESULT_DIR}/#{user.login}"
   Dir.mkdir(user_dir) if !FileTest.exist?(user_dir)
   
-  problem_out_dir = "#{user_dir}/#{problem.name}"
+  problem_out_dir = "#{user_dir}/#{problem.name}/#{submission_id}"
   Dir.mkdir(problem_out_dir) if !FileTest.exist?(problem_out_dir)
 
   problem_home = "#{PROBLEMS_DIR}/#{problem.name}"
@@ -171,32 +171,50 @@ end
 puts "environment: #{GRADER_ENV}"
 require File.dirname(__FILE__) + "/environment.rb"
 
-#main program
+#reading rails environment
 talk 'Reading rails environment'
 
 RAILS_ENV = 'development'
 require RAILS_APP_DIR + '/config/environment'
 
+#register grader process
+if REPORT_GRADER
+  grader_proc = GraderProcess.register(GRADER_IP_ADDRESS,
+                                       Process.pid,
+                                       grader_mode)
+else
+  grader_proc = nil
+end
+
 case grader_mode
 when "queue"
   talk 'Grader queue'
   while true
+    
     if check_stopfile    # created by calling grader stop
       clear_stopfile
       puts "stopped"
+      grader_proc.report_inactive if grader_proc!=nil
       exit(0)
     end
     
-    task = Task.find(:first, :order => 'created_at')
+    task = Task.get_inqueue_and_change_status(Task::STATUS_GRADING)
     if task!=nil 
+      grader_proc.report_active(task) if grader_proc!=nil
+    
       grade(task.submission_id)
-      task.destroy
+      task.status_complete
     else
-      sleep(1)
+      #grader_proc.report_active if grader_proc!=nil
+
+      sleep(5)
     end
   end
   
 when "prob"
+
+  grader_proc.report_active if grader_proc!=nil
+
   prob = Problem.find_by_name(ARGV[2])
   if prob==nil
     puts "cannot find problem: #{ARGV[2]}"
@@ -215,7 +233,8 @@ when "prob"
   end
 end
 
-
+# report inactive
+grader_proc.report_inactive if grader_proc!=nil
                              
   
 

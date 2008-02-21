@@ -5,6 +5,9 @@ USER_RESULT_DIR = "/home/jittat/grader/result"
 
 TALKATIVE = true
 
+REPORT_GRADER = true
+GRADER_IP_ADDRESS = '158.108.111.111'
+
 def report_comment(comment)
   comment.chomp
 end
