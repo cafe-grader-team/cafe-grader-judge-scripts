@@ -1,0 +1,25 @@
+
+
+Grader::Initializer.run do |config|
+  
+  config.problems_dir = "/home/jittat/grader/scripts/test/sandbox/ev"
+  config.user_result_dir = "/home/jittat/grader/scripts/test/sandbox/result"
+  
+  config.talkative = true
+  
+  config.report_grader = false
+
+  config.rails_env = 'test'
+  
+  config.report_comment = lambda do |comment|	
+    comment.chomp
+  end
+
+  class << config
+    attr_accessor :test_data_dir, :test_sandbox_dir
+  end
+
+  config.test_data_dir = "/home/jittat/grader/scripts/test/data"
+  config.test_sandbox_dir = "/home/jittat/grader/scripts/test/sandbox"
+
+end

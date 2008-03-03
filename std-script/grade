@@ -1,5 +1,17 @@
 #!/usr/bin/ruby
 
+def log(str='')
+  if ENV['TALKATIVE']!=nil
+    puts str
+  end
+  if ENV['GRADER_LOGGING']!=nil
+    log_fname = ENV['GRADER_LOGGING']
+    fp = File.open(log_fname,"a")
+    fp.puts("grade: #{Time.new.strftime("%H:%M")} #{str}")
+    fp.close
+  end
+end
+
 def char_comment(comment)
   if comment =~ /[iI]ncorrect/
     '-'
@@ -18,13 +30,14 @@ load "#{problem_home}/test_cases/all_tests.cfg"
 problem = Problem.get_instance
 
 if problem.well_formed? == false
-  puts "The problem specification is not well formed."
+  log "The problem specification is not well formed."
   exit(127)
 end
 
 all_score = 0
 all_comment = ''
 (1..(problem.runs.length-1)).each do |k|
+  log "grade run #{k}"
   run = problem.runs[k]
   run_score = 0
   run_comment = ''
@@ -32,7 +45,7 @@ all_comment = ''
   run.tests.each do |test_num|
     result_file_name = "#{test_num}/result"
     if not File.exists?(result_file_name)
-      puts "Cannot find the file #{test_num}/result!"
+      log "Cannot find the file #{test_num}/result!"
       exit(127)
     end
 

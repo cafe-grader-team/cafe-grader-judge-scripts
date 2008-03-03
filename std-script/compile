@@ -9,6 +9,13 @@
 #
 ##############################
 
+talk ()
+{
+    if [ "$TALKATIVE" != "" ]; then
+	echo "$1"
+    fi
+}
+
 export C_COMPILER=/usr/bin/gcc
 export CPLUSPLUS_COMPILER=/usr/bin/g++
 export PASCAL_COMPILER=/usr/bin/gpc
@@ -33,7 +40,7 @@ fi
 if [ $# -ge 1 ]
 then
     export PROG_LANG=$1
-    echo "programming language: ${PROG_LANG}"
+    talk "programming language: ${PROG_LANG}"
 fi
 
 if [ $# -ge 2 ]
@@ -42,7 +49,7 @@ then
 else
     export SOURCE_FILE=source
 fi
-echo "         source file: $SOURCE_FILE"
+talk "         source file: $SOURCE_FILE"
 
 if [ $# -ge 3 ]
 then
@@ -50,7 +57,7 @@ then
 else
     export OUTPUT_FILE=a.out
 fi
-echo "         output file: $OUTPUT_FILE"
+talk "         output file: $OUTPUT_FILE"
 
 if [ $# -eq 4 ]
 then
@@ -58,9 +65,7 @@ then
 else
     export MESSAGE_FILE=compiler_message
 fi
-echo "        message file: $MESSAGE_FILE"
-
-echo
+talk "        message file: $MESSAGE_FILE"
 
 # Remove any remaining output files or message files.
 rm -Rf $OUTPUT_FILE
@@ -69,7 +74,7 @@ rm -Rf $MESSAGE_FILE
 # Check if the source file exists before attempt compiling.
 if [ ! -f $SOURCE_FILE ]
 then
-    echo "ERROR: The source file does not exist!"
+    talk "ERROR: The source file does not exist!"
     echo "ERROR: The source file did not exist." > $MESSAGE_FILE
     exit 127
 fi
@@ -85,7 +90,7 @@ elif [ $PROG_LANG = "pascal" ]
 then
     $PASCAL_COMPILER $PASCAL_OPTIONS -o $OUTPUT_FILE $SOURCE_FILE 2>$MESSAGE_FILE
 else
-    echo "ERROR: Invalid language specified!"
+    talk "ERROR: Invalid language specified!"
     echo "ERROR: Invalid language specified!" > $MESSAGE_FILE
     exit 127
 fi
@@ -93,10 +98,9 @@ fi
 # Report success or failure.
 if [ -f $OUTPUT_FILE ]
 then
-    echo "Compilation was successful!"    
+    talk "Compilation was successful!"    
 else
-    echo "ERROR: Something was wrong during the compilation!"
-    echo "Dumping compiler message:"
-    echo
-    cat $MESSAGE_FILE
+    talk "ERROR: Something was wrong during the compilation!"
+    talk "Dumping compiler message:"
+    #cat $MESSAGE_FILE
 fi

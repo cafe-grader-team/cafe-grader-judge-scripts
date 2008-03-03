@@ -1,5 +1,17 @@
 #!/usr/bin/ruby
 
+def log(str='')
+  if ENV['TALKATIVE']!=nil
+    puts str
+  end
+  if ENV['GRADER_LOGGING']!=nil
+    log_fname = ENV['GRADER_LOGGING']
+    fp = File.open(log_fname,"a")
+    fp.puts("judge: #{Time.new.strftime("%H:%M")} #{str}")
+    fp.close
+  end
+end
+
 problem_home = ENV['PROBLEM_HOME']
 
 def execute(command, error_message="")
@@ -24,17 +36,17 @@ end
 
 language = ARGV[0]
 if language != "c" && language != "c++" && language != "pascal"
-  puts "You specified a language that is not supported."
+  log "You specified a language that is not supported."
   exit(127)
 end
 
 source_file = ARGV[1]
 if File.exist?(source_file) == false
-  puts "The source file does not exist."
+  log "The source file does not exist."
   exit(127)
 end
 
-puts "Making test result and sandbox directories..."
+log "Making test result and sandbox directories..."
 
 current_dir = `pwd`
 current_dir.strip!
@@ -44,7 +56,7 @@ if ARGV.length >= 3
 else
   test_result_dir = "#{current_dir}/test-result"
 end
-puts "Test result directory: #{test_result_dir}"
+log "Test result directory: #{test_result_dir}"
 system("rm -Rf #{test_result_dir}")
 execute("mkdir #{test_result_dir}", "Cannot make directory #{test_result_dir}.")
 
@@ -53,18 +65,18 @@ if ARGV.length >= 4
 else
   sandbox_dir = "#{current_dir}/sandbox"
 end
-puts "Sandbox directory: #{sandbox_dir}"
+log "Sandbox directory: #{sandbox_dir}"
 system("rm -Rf #{sandbox_dir}")
 execute("mkdir #{sandbox_dir}", "Cannot make directory #{sandbox_dir}")
 
 # Compile
-puts
-puts "Compiling..."
+log
+log "Compiling..."
 execute("cp #{source_file} #{sandbox_dir}", "Cannot copy the source file to #{sandbox_dir}")
 begin 
   Dir.chdir sandbox_dir
 rescue
-  puts "ERROR: Cannot change directory to #{sandbox_dir}."
+  log "ERROR: Cannot change directory to #{sandbox_dir}."
   exit(127)
 end
 execute("#{problem_home}/script/compile #{language} #{source_file}", "Compilation error!")
@@ -72,7 +84,7 @@ compile_message = `cat compiler_message`
 compile_message.strip!
 execute("mv compiler_message #{test_result_dir}", "Cannot move the compiler message to #{test_result_dir}.")
 if !FileTest.exist?("a.out")
-  puts "Cannot compile the source code. See message in #{test_result_dir}/compile_message"
+  log "Cannot compile the source code. See message in #{test_result_dir}/compile_message"
   exit(127)
 else
   execute("mv a.out #{test_result_dir}", "Cannot move the compiled program to #{test_result_dir}")
@@ -84,13 +96,13 @@ load "#{problem_home}/test_cases/all_tests.cfg"
 problem = Problem.get_instance
 
 if problem.well_formed? == false
-  puts "The problem specification is not well formed."
+  log "The problem specification is not well formed."
   exit(127)
 end
 
 # Doing the testing.
 (1..(problem.num_tests)).each do |test_num|
-  puts
+  log "Test number: #{test_num}"
   execute("cp #{test_result_dir}/a.out #{sandbox_dir}", "Cannot copy the compiled program into #{sandbox_dir}")
   execute("#{problem_home}/script/run #{language} #{test_num}", "Error occured during execution of the run script")
   execute("mkdir #{test_result_dir}/#{test_num}", "Cannot create directory #{test_result_dir}/#{test_num}")
@@ -101,15 +113,15 @@ end
 end
 
 # Grade
-puts
-puts "Grading..."
+log
+log "Grading..."
 begin
   Dir.chdir test_result_dir
 rescue
-  puts "ERROR: Cannot change directory to #{test_result_dir}."
+  log "ERROR: Cannot change directory to #{test_result_dir}."
   exit(127)
 end
 execute("#{problem_home}/script/grade", "An error occured during grading!")
 
-puts
-puts "All done!"
+log
+log "All done!"

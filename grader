@@ -1,134 +1,5 @@
 #!/usr/bin/ruby
 
-def talk(str)
-  if TALKATIVE
-    puts str
-  end
-end
-
-def execute(command, error_message="")
-  if not system(command)
-    puts "ERROR: #{error_message}"
-    exit(127)
-  end
-end
-
-def save_source(submission,dir,fname)
-  f = File.open("#{dir}/#{fname}","w")
-  f.write(submission.source)
-  f.close
-end
-
-def call_judge(problem_home,language,problem_out_dir,fname)
-  ENV['PROBLEM_HOME'] = problem_home
-
-  puts problem_out_dir
-  Dir.chdir problem_out_dir
-  cmd = "#{problem_home}/script/judge #{language} #{fname}"
-#  puts "CMD: #{cmd}"
-  system(cmd)
-end
-
-def read_result(test_result_dir)
-  cmp_msg_fname = "#{test_result_dir}/compiler_message"
-  cmp_file = File.open(cmp_msg_fname)
-  cmp_msg = cmp_file.read
-  cmp_file.close
-
-  result_fname = "#{test_result_dir}/result"
-  comment_fname = "#{test_result_dir}/comment"  
-  if FileTest.exist?(result_fname)
-    result_file = File.open(result_fname)
-    result = result_file.readline.to_i
-    result_file.close
-
-    comment_file = File.open(comment_fname)
-    comment = comment_file.readline.chomp
-    comment_file.close
-
-    return {:points => result, 
-      :comment => comment, 
-      :cmp_msg => cmp_msg}
-  else
-    return {:points => 0,
-      :comment => 'compile error',
-      :cmp_msg => cmp_msg}
-  end
-end
-
-def save_result(submission,result)
-  problem = Problem.find(submission.problem_id)
-  submission.graded_at = Time.now
-  submission.points = result[:points]
-  if submission.points == problem.full_score
-    submission.grader_comment = 'PASSED: ' + report_comment(result[:comment])
-  else
-    submission.grader_comment = 'FAILED: ' + report_comment(result[:comment])
-  end
-  submission.compiler_message = result[:cmp_msg]
-  submission.save
-end
-
-def copy_script(problem_home)
-  script_dir = "#{problem_home}/script"
-  std_script_dir = File.dirname(__FILE__) + '/std-script'
-  scripts = Dir[std_script_dir + '/*']
-  
-  copied = []
-
-  scripts.each do |s|
-    fname = File.basename(s)
-    if !FileTest.exist?("#{script_dir}/#{fname}")
-      copied << fname
-      system("cp #{s} #{script_dir}")
-    end
-  end
-
-  return copied
-end
-
-def clear_script(log,problem_home)
-  log.each do |s|
-    system("rm #{problem_home}/script/#{s}")
-  end
-end
-
-def grade(submission_id)
-  current_dir = `pwd`.chomp
-
-  sub = Submission.find(submission_id)
-  user = sub.user
-  problem = sub.problem
-
-  language = sub.language.name
-  lang_ext = sub.language.ext
-  # FIX THIS
-  talk 'some hack on language'
-  if language == 'cpp'
-    language = 'c++'
-  end
-
-  user_dir = "#{USER_RESULT_DIR}/#{user.login}"
-  Dir.mkdir(user_dir) if !FileTest.exist?(user_dir)
-  
-  problem_out_dir = "#{user_dir}/#{problem.name}/#{submission_id}"
-  Dir.mkdir(problem_out_dir) if !FileTest.exist?(problem_out_dir)
-
-  problem_home = "#{PROBLEMS_DIR}/#{problem.name}"
-  source_name = "#{problem.name}.#{lang_ext}"
-
-  save_source(sub,problem_out_dir,source_name)
-
-  copy_log = copy_script(problem_home)
-
-  call_judge(problem_home,language,problem_out_dir,source_name)
-  save_result(sub,read_result("#{problem_out_dir}/test-result"))
-
-  clear_script(copy_log,problem_home)
-
-  Dir.chdir(current_dir)
-end
-
 def stop_grader
   File.open(File.dirname(__FILE__) + '/stop','w').close
 end
@@ -139,6 +10,16 @@ end
 
 def clear_stopfile
   system("rm " + File.dirname(__FILE__) + '/stop')
+end
+
+def config
+  Grader::Configuration.get_instance
+end
+
+def talk(str)
+  if config.talkative
+    puts str
+  end
 end
 
 #########################################
@@ -169,22 +50,26 @@ else
 end
 
 puts "environment: #{GRADER_ENV}"
-require File.dirname(__FILE__) + "/environment.rb"
+require File.join(File.dirname(__FILE__),'config/environment')
 
 #reading rails environment
 talk 'Reading rails environment'
 
-RAILS_ENV = 'development'
-require RAILS_APP_DIR + '/config/environment'
+RAILS_ENV = config.rails_env
+require RAILS_ROOT + '/config/environment'
+
 
 #register grader process
-if REPORT_GRADER
-  grader_proc = GraderProcess.register(GRADER_IP_ADDRESS,
+if config.report_grader
+  grader_proc = GraderProcess.register(config.grader_hostname,
                                        Process.pid,
                                        grader_mode)
 else
   grader_proc = nil
 end
+
+# create judge engine
+engine = Grader::Engine.new(grader_proc)
 
 case grader_mode
 when "queue"
@@ -194,19 +79,11 @@ when "queue"
     if check_stopfile    # created by calling grader stop
       clear_stopfile
       puts "stopped"
-      grader_proc.report_inactive if grader_proc!=nil
-      exit(0)
+      break
     end
-    
-    task = Task.get_inqueue_and_change_status(Task::STATUS_GRADING)
-    if task!=nil 
-      grader_proc.report_active(task) if grader_proc!=nil
-    
-      grade(task.submission_id)
-      task.status_complete
-    else
-      #grader_proc.report_active if grader_proc!=nil
 
+    task = engine.grade_oldest_task
+    if task==nil
       sleep(5)
     end
   end
@@ -218,23 +95,12 @@ when "prob"
   prob = Problem.find_by_name(ARGV[2])
   if prob==nil
     puts "cannot find problem: #{ARGV[2]}"
-    exit(0)
+  else
+    engine.grade_problem(prob)
   end
-  users = User.find(:all)
-  users.each do |u|
-    puts "user: #{u.login}"
-    last_sub = Submission.find(:first,
-                               :conditions => "user_id = #{u.id} and " +
-                                              "problem_id = #{prob.id}",
-                               :order => 'submitted_at DESC')
-    if last_sub!=nil
-      grade(last_sub.id)
-    end
-  end
+  
 end
 
 # report inactive
 grader_proc.report_inactive if grader_proc!=nil
                              
-  
-

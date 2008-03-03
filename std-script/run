@@ -1,5 +1,17 @@
 #!/usr/bin/ruby
 
+def log(str='')
+  if ENV['TALKATIVE']!=nil
+    puts str
+  end
+  if ENV['GRADER_LOGGING']!=nil
+    log_fname = ENV['GRADER_LOGGING']
+    fp = File.open(log_fname,"a")
+    fp.puts("run: #{Time.new.strftime("%H:%M")} #{str}")
+    fp.close
+  end
+end
+
 if ARGV.length < 2 || ARGV.length > 3
   puts "Usage: run <language> <test-num> [<program-name>]"
   exit(127)
@@ -19,13 +31,13 @@ load "#{problem_home}/test_cases/all_tests.cfg"
 problem = Problem.get_instance
 
 if problem.well_formed? == false
-  puts "The problem specification is not well formed."
+  log "The problem specification is not well formed."
   exit(127)
 end
 
 # Check if the test number is okay.
 if test_num <= 0 || test_num > problem.num_tests
-  puts "You have specified a wrong test number."
+  log "You have specified a wrong test number."
   exit(127)
 end
 
@@ -45,9 +57,9 @@ mem_limit = problem.get_mem_limit(test_num) * 1024
 
 # Run the program.
 run_command = "/usr/bin/time -f \"%E\" 2>run_result #{problem_home}/script/box -a 2 -f -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name}"
-puts "Running test #{test_num}..."
-puts run_command
-puts 
+log "Running test #{test_num}..."
+log run_command
+log 
 system(run_command)
 
 # Create the result file. 
@@ -78,21 +90,20 @@ report = lambda{ |status, points, comment|
   end
   comment_file.close
 
-  puts 
-  puts "Done!"
+  log "Done!"
   exit(0)  
 }
 
 if run_result[0][0,2] != "OK"
-  puts "There was a runtime error."
+  log "There was a runtime error."
   report.call(run_result[0], 0, "No comment.\n")
 end
 
 # Run 'check' to evaluate the output.
 #puts "There was no runtime error. Proceed to checking the output."
 check_command = "#{problem_home}/script/check #{language} #{test_num}"
-puts "Checking the output..."
-puts check_command
+log "Checking the output..."
+log check_command
 if not system(check_command)
   exit(127)
 end

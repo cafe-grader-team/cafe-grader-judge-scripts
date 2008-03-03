@@ -1,0 +1,20 @@
+
+
+Grader::Initializer.run do |config|
+
+  config.problems_dir = "/home/jittat/grader/ev"
+  config.user_result_dir = "/home/jittat/grader/result"
+  
+  config.talkative = true
+  
+  config.report_grader = true
+  
+  config.report_comment = lambda do |comment|	
+    if comment.chomp =~ /^P+$/    # all P's
+      'passed'
+    else
+      'failed'
+    end
+  end
+  
+end
