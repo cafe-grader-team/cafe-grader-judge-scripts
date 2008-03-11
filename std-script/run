@@ -12,6 +12,18 @@ def log(str='')
   end
 end
 
+def extract_time(t)
+  if (result=/^(.*)r(.*)u(.*)s/.match(t))
+    {:real => result[1], :user => result[2], :sys => result[3]}
+  else
+    raise "Error reading running time"
+  end
+end
+
+def compile_box(source,bin)
+  system("gcc #{source} -o #{bin}")
+end
+
 if ARGV.length < 2 || ARGV.length > 3
   puts "Usage: run <language> <test-num> [<program-name>]"
   exit(127)
@@ -55,8 +67,17 @@ mem_limit = problem.get_mem_limit(test_num) * 1024
 # Copy the input file.
 #`cp #{problem_home}/test_cases/#{test_num}/#{input_file_name} .`
 
+time_output_format = "%Er%Uu%Ss"
+
+# check if box is there, if not, compile it!
+if !File.exists?("#{problem_home}/script/box")
+  log "WARNING: Compiling box: to increase efficiency, it should be compile manually"
+  compile_box("#{problem_home}/script/box.c",
+              "#{problem_home}/script/box")
+end
+
 # Run the program.
-run_command = "/usr/bin/time -f \"%E\" 2>run_result #{problem_home}/script/box -a 2 -f -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name}"
+run_command = "/usr/bin/time -f \"#{time_output_format}\" 2>run_result #{problem_home}/script/box -a 2 -f -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name}"
 log "Running test #{test_num}..."
 log run_command
 log 
@@ -71,6 +92,7 @@ run_result_file = File.new("run_result", "r")
 run_result = run_result_file.readlines
 run_result_file.close
 time_elapsed = run_result[run_result.length-1]
+running_time = extract_time(time_elapsed)
 
 report = lambda{ |status, points, comment|
   result_file.write status.strip
@@ -97,6 +119,11 @@ report = lambda{ |status, points, comment|
 if run_result[0][0,2] != "OK"
   log "There was a runtime error."
   report.call(run_result[0], 0, "No comment.\n")
+end
+
+if running_time[:user].to_f + running_time[:sys].to_f > time_limit
+  log "Time limit exceeded."
+  report.call("Time limit exceeded", 0, "No comment.\n")
 end
 
 # Run 'check' to evaluate the output.

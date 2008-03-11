@@ -5,6 +5,7 @@
 #  * copy testdata in the old format and create standard testcase config file
 
 require 'erb'
+require 'fileutils'
 
 def input_filename(dir,i)
   "#{dir}/input-#{i}.txt"
@@ -34,15 +35,18 @@ def process_options(options)
   end
 end
 
-GRADER_DIR = File.dirname(__FILE__)
+SCRIPT_DIR = File.dirname(__FILE__)
 
 # print usage
 if ARGV.length < 3
-  puts "using: import_problem prob_name importing_testcase_dir num_of_testcase [options]
+  puts <<USAGE
+using: import_problem prob_name importing_testcase_dir num_of_testcase [options]
   * creates a directory for a problem in the current directory,
   * copy testdata in the old format and create standard testcase config file
+  * creates a test_request template in the current directory + '/test_request'
   * options: -t time-limit (in seconds)
-             -m memory-limit (in megabytes)"
+             -m memory-limit (in megabytes)
+USAGE
   exit(127)
 end
 
@@ -56,6 +60,7 @@ process_options(options)
 
 # start working
 puts "creating directories"
+
 
 system("mkdir #{problem}")
 system("mkdir #{problem}/script")
@@ -73,11 +78,26 @@ end
 # generating all_tests.cfg
 puts "generating testcase config file"
 
-template = File.open(File.dirname(__FILE__) + "/all_tests.cfg.erb").read
+template = File.open(SCRIPT_DIR + "/templates/all_tests.cfg.erb").read
 all_test_cfg = ERB.new(template)
 
 cfg_file = File.open("#{problem}/test_cases/all_tests.cfg","w")
 cfg_file.puts all_test_cfg.result
 cfg_file.close
+
+# generating test_request directory
+puts "generating test_request template"
+FileUtils.mkdir_p("test_request/#{problem}/script")
+FileUtils.mkdir_p("test_request/#{problem}/test_cases/1")
+
+template = File.open(SCRIPT_DIR + "/templates/test_request_all_tests.cfg.erb").read
+test_request_all_test_cfg = ERB.new(template)
+
+cfg_file = File.open("test_request/#{problem}/test_cases/all_tests.cfg","w")
+cfg_file.puts test_request_all_test_cfg.result
+cfg_file.close
+
+system("cp #{SCRIPT_DIR}/templates/check_empty test_request/#{problem}/script/check")
+system("cp #{SCRIPT_DIR}/templates/answer-1.txt test_request/#{problem}/test_cases/1")
 
 puts "done"

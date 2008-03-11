@@ -16,15 +16,45 @@ def config
   Grader::Configuration.get_instance
 end
 
-def talk(str)
+def log_file_name
+  config.log_dir + 
+    "/#{GRADER_ENV}_#{config.grader_mode}.#{Process.pid}"
+end
+
+def log(str)
   if config.talkative
     puts str
   end
+  if config.logging
+    fp = File.open(log_file_name,"a")
+    fp.puts("GRADER: #{Time.new.strftime("%H:%M")} #{str}")
+    fp.close
+  end
+end
+
+def display_manual
+  puts <<USAGE
+Grader.
+using: (1) grader 
+       (2) grader environment [mode]
+       (3) grader stop
+       (4) grader --help
+(1) call grader with environment = 'exam', mode = 'queue'
+(2) possible modes are: 'queue', 'prob', 'test_request'
+(3) create stop-file to stop running grader in queue mode
+(4) You are here.
+USAGE
 end
 
 #########################################
 # main program
 #########################################
+
+# with --help
+if (ARGV.length==1) and (/help/.match(ARGV[0]))
+  display_manual
+  exit(0)
+end
 
 # reading environment and options
 if (ARGV.length >= 1) and (ARGV[0]=='stop')
@@ -52,14 +82,20 @@ end
 puts "environment: #{GRADER_ENV}"
 require File.join(File.dirname(__FILE__),'config/environment')
 
-#reading rails environment
-talk 'Reading rails environment'
+# add grader_mode to config
+# this is needed because method log needs it.  TODO: clean this up
+class << config
+  attr_accessor :grader_mode
+end
+config.grader_mode = grader_mode
+
+# reading rails environment
+log 'Reading rails environment'
 
 RAILS_ENV = config.rails_env
 require RAILS_ROOT + '/config/environment'
 
-
-#register grader process
+# register grader process
 if config.report_grader
   grader_proc = GraderProcess.register(config.grader_hostname,
                                        Process.pid,
@@ -68,27 +104,45 @@ else
   grader_proc = nil
 end
 
-# create judge engine
-engine = Grader::Engine.new(grader_proc)
+#set loggin environment
+ENV['GRADER_LOGGING'] = log_file_name
+
+#
+# MAIN LOOP
+#
 
 case grader_mode
-when "queue"
-  talk 'Grader queue'
+when "queue", "test_request"
+  log "Grader: #{grader_mode}"
+  if grader_mode=="queue"
+    engine = Grader::Engine.new
+  else
+    engine = Grader::Engine.new(Grader::TestRequestRoomMaker.new,
+                                Grader::TestRequestReporter.new)
+  end
+
+  runner = Grader::Runner.new(engine, grader_proc)
   while true
     
     if check_stopfile    # created by calling grader stop
       clear_stopfile
-      puts "stopped"
+      log "stopped (with stop file)"
       break
     end
-
-    task = engine.grade_oldest_task
+    
+    if grader_mode=="queue"
+      task = runner.grade_oldest_task
+    else
+      task = runner.grade_oldest_test_request
+    end
     if task==nil
-      sleep(5)
+      sleep(1)
     end
   end
   
 when "prob"
+  engine = Grader::Engine.new
+  runner = Grader::Runner.new(engine, grader_proc)
 
   grader_proc.report_active if grader_proc!=nil
 
@@ -96,9 +150,12 @@ when "prob"
   if prob==nil
     puts "cannot find problem: #{ARGV[2]}"
   else
-    engine.grade_problem(prob)
+    runner.grade_problem(prob)
   end
-  
+
+else
+  display_manual
+  exit(0)
 end
 
 # report inactive

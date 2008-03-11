@@ -20,7 +20,7 @@ def char_comment(comment)
   elsif comment =~ /[Tt]ime/
     'T'
   else
-    '?'
+    'x'  # these are run time errors
   end
 end
 
