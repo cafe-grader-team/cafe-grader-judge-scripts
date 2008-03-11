@@ -1,15 +1,22 @@
 #!/usr/bin/ruby
 
-def stop_grader
-  File.open(File.dirname(__FILE__) + '/stop','w').close
+def stop_grader(id)
+  if id==:all
+    File.open(File.dirname(__FILE__) + "/stop.all",'w').close
+  else
+    File.open(File.dirname(__FILE__) + "/stop.#{id}",'w').close
+  end
 end
 
 def check_stopfile
-  FileTest.exist?(File.dirname(__FILE__) + '/stop')
+  FileTest.exist?(File.dirname(__FILE__) + "/stop.all") or
+    FileTest.exist?(File.dirname(__FILE__) + "/stop.#{Process.pid}")
 end
 
 def clear_stopfile
-  system("rm " + File.dirname(__FILE__) + '/stop')
+  if FileTest.exist?(File.dirname(__FILE__) + "/stop.#{Process.pid}")
+    system("rm " + File.dirname(__FILE__) + "/stop.#{Process.pid}")
+  end
 end
 
 def config
@@ -37,7 +44,7 @@ def display_manual
 Grader.
 using: (1) grader 
        (2) grader environment [mode]
-       (3) grader stop
+       (3) grader stop [all|pids-list]
        (4) grader --help
 (1) call grader with environment = 'exam', mode = 'queue'
 (2) possible modes are: 'queue', 'prob', 'test_request'
@@ -58,13 +65,24 @@ end
 
 # reading environment and options
 if (ARGV.length >= 1) and (ARGV[0]=='stop')
-  stop_grader
-  puts "stop file created"
+  if ARGV.length==1
+    puts "you should specify pid-list or 'all'"
+    display_manual
+  elsif (ARGV.length==2) and (ARGV[1]=='all')
+    stop_grader(:all)
+    puts "A global stop file ('stop.all') created."
+    puts "You should remove it manually later."
+  else
+    (1..ARGV.length-1).each do |i|
+      stop_grader(ARGV[i])
+    end
+    puts "stop file(s) created"
+  end
   exit(0)
 end
 
 if check_stopfile
-  puts "stop file exists"
+  puts "Stop file exists.  Terminated."
   clear_stopfile
   exit(0)
 end
