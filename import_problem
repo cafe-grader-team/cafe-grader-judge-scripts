@@ -45,8 +45,9 @@ using: import_problem name dir num check [options]
           dir = importing testcase directory
           num = number of testcases
           check = check script, which can be 
-                   integer, text (for standard script), 
-                   or a path to a file
+                   'integer', 'text' (for standard script), 
+                   path_to_your_script, or
+                   'wrapper:(path_to_your_wrapped_script)'
    options: -t time-limit (in seconds)
             -m memory-limit (in megabytes)
 What it does:
@@ -54,6 +55,9 @@ What it does:
   * copies testdata in the old format and create standard testcase config file
   * copies a check script for grading
   * creates a test_request template in the current directory + '/test_request'
+
+For wrapped checked script see comment in templates/check_wrapper for
+  information.
 USAGE
   exit(127)
 end
