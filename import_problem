@@ -94,12 +94,28 @@ cfg_file.close
 
 
 # copy check script
-if File.exists?(SCRIPT_DIR + "/templates/check.#{check_script}")
-  check_script_fname = SCRIPT_DIR + "/templates/check.#{check_script}"
+if res = /^wrapper:(.*)$/.match(check_script)
+  # wrapper script
+  check_script_fname = res[1]
+  script_name = File.basename(check_script_fname)
+  check_wrapper_template = File.open(SCRIPT_DIR + "/templates/check_wrapper")
+  check_wrapper = ERB.new(template)
+
+  check_file = File.open("#{problem}/script/check","w")
+  check_file.puts check_wrapper
+  check_file.close
+
+  File.chmod(0755,"#{problem}/script/check")
+
+  system("cp #{check_script_fname} #{problem}/script/#{script_name}")
 else
-  check_script_fname = check_script
+  if File.exists?(SCRIPT_DIR + "/templates/check.#{check_script}")
+    check_script_fname = SCRIPT_DIR + "/templates/check.#{check_script}"
+  else
+    check_script_fname = check_script
+  end
+  system("cp #{check_script_fname} #{problem}/script/check")
 end
-system("cp #{check_script_fname} #{problem}/script/check")
 
 # generating test_request directory
 puts "generating test_request template"
