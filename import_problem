@@ -21,7 +21,7 @@ def copy_testcase(importing_test_dir,dir,i)
 end
 
 def process_options(options)
-  i = 3
+  i = 4
   while i<ARGV.length
     if ARGV[i]=='-t'
       options[:time_limit] = ARGV[i+1].to_i if ARGV.length>i+1
@@ -38,7 +38,7 @@ end
 SCRIPT_DIR = File.dirname(__FILE__)
 
 # print usage
-if ARGV.length < 4
+if (ARGV.length < 4) or (ARGV[3][0,1]=="-")
   puts <<USAGE
 using: import_problem name dir num check [options]
    where: name = problem_name [
