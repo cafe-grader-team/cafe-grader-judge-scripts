@@ -38,14 +38,22 @@ end
 SCRIPT_DIR = File.dirname(__FILE__)
 
 # print usage
-if ARGV.length < 3
+if ARGV.length < 4
   puts <<USAGE
-using: import_problem prob_name importing_testcase_dir num_of_testcase [options]
+using: import_problem name dir num check [options]
+   where: name = problem_name [
+          dir = importing testcase directory
+          num = number of testcases
+          check = check script, which can be 
+                   integer, text (for standard script), 
+                   or a path to a file
+   options: -t time-limit (in seconds)
+            -m memory-limit (in megabytes)
+What it does:
   * creates a directory for a problem in the current directory,
-  * copy testdata in the old format and create standard testcase config file
+  * copies testdata in the old format and create standard testcase config file
+  * copies a check script for grading
   * creates a test_request template in the current directory + '/test_request'
-  * options: -t time-limit (in seconds)
-             -m memory-limit (in megabytes)
 USAGE
   exit(127)
 end
@@ -54,13 +62,12 @@ end
 problem = ARGV[0]
 testcase_dir = ARGV[1]
 num_testcases = ARGV[2].to_i
-
+check_script = ARGV[3]
 options = {:time_limit => 1,  :mem_limit => 16}
 process_options(options)
 
 # start working
 puts "creating directories"
-
 
 system("mkdir #{problem}")
 system("mkdir #{problem}/script")
@@ -84,6 +91,15 @@ all_test_cfg = ERB.new(template)
 cfg_file = File.open("#{problem}/test_cases/all_tests.cfg","w")
 cfg_file.puts all_test_cfg.result
 cfg_file.close
+
+
+# copy check script
+if File.exists?(SCRIPT_DIR + "/templates/check.#{check_script}")
+  check_script_fname = SCRIPT_DIR + "/templates/check.#{check_script}"
+else
+  check_script_fname = check_script
+end
+system("cp #{check_script_fname} #{problem}/script/check")
 
 # generating test_request directory
 puts "generating test_request template"
