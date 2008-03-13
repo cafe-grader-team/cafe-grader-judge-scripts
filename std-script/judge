@@ -16,6 +16,7 @@ problem_home = ENV['PROBLEM_HOME']
 
 def execute(command, error_message="")
   if not system(command)
+    log "ERROR: #{error_message}"
     puts "ERROR: #{error_message}"
     exit(127)
   end

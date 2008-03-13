@@ -55,21 +55,37 @@ module Grader
       result_fname = "#{test_result_dir}/result"
       comment_fname = "#{test_result_dir}/comment"  
       if FileTest.exist?(result_fname)
-        result_file = File.open(result_fname)
-        result = result_file.readline.to_i
-        result_file.close
-        
-        comment_file = File.open(comment_fname)
-        comment = comment_file.readline.chomp
-        comment_file.close
-        
+        comment = ""
+        begin
+          result_file = File.open(result_fname)
+          result = result_file.readline.to_i
+          result_file.close
+        rescue
+          result = 0
+          comment = "error reading result file."
+        end
+          
+        begin
+          comment_file = File.open(comment_fname)
+          comment += comment_file.readline.chomp
+          comment_file.close
+        rescue
+          comment += ""
+        end
+
         return {:points => result, 
           :comment => comment, 
           :cmp_msg => cmp_msg}
       else
-        return {:points => 0,
-          :comment => 'compile error',
-          :cmp_msg => cmp_msg}
+        if FileTest.exist?("#{test_result_dir}/a.out")
+          return {:points => 0,
+            :comment => 'error during grading',
+            :cmp_msg => cmp_msg}
+        else
+          return {:points => 0,
+            :comment => 'compile error',
+            :cmp_msg => cmp_msg}
+        end
       end
     end
     

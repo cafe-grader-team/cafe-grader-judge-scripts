@@ -132,6 +132,7 @@ check_command = "#{problem_home}/script/check #{language} #{test_num}"
 log "Checking the output..."
 log check_command
 if not system(check_command)
+  log "Problem with check script"
   exit(127)
 end
 

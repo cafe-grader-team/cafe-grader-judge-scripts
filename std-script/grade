@@ -45,16 +45,17 @@ all_comment = ''
   run.tests.each do |test_num|
     result_file_name = "#{test_num}/result"
     if not File.exists?(result_file_name)
+      run_comment += "result file for test #{test_num} not found\n"
+      run_comment_short += 'x'
       log "Cannot find the file #{test_num}/result!"
-      exit(127)
+    else
+      result_file = File.new(result_file_name, "r")
+      result_file_lines = result_file.readlines
+      run_score = run_score + result_file_lines[1].to_i
+      run_comment += result_file_lines[0]
+      run_comment_short += char_comment(result_file_lines[0])
+      result_file.close
     end
-
-    result_file = File.new(result_file_name, "r")
-    result_file_lines = result_file.readlines
-    run_score = run_score + result_file_lines[1].to_i
-    run_comment += result_file_lines[0]
-    run_comment_short += char_comment(result_file_lines[0])
-    result_file.close
   end
   
   run_result_file = File.new("result-#{k}", "w")
