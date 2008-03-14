@@ -133,6 +133,7 @@ log "Checking the output..."
 log check_command
 if not system(check_command)
   log "Problem with check script"
+  report.call("Incorrect",0,"Check script error.\n")
   exit(127)
 end
 

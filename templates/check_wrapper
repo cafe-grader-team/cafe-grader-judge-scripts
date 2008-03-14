@@ -34,12 +34,15 @@ end
 load "#{problem_home}/test_cases/all_tests.cfg"
 problem = Problem.get_instance
 
-answer_file_name = File.new("#{problem_home}/test_cases/#{test_num}/answer-#{test_num}.txt")
-input_file_name = File.new("#{problem_home}/test_cases/#{test_num}/input-#{test_num}.txt")
+answer_file_name = "#{problem_home}/test_cases/#{test_num}/answer-#{test_num}.txt"
+input_file_name = "#{problem_home}/test_cases/#{test_num}/input-#{test_num}.txt"
 
-score = Problem.get_score(test_num)
+score = problem.get_score(test_num)
 
 cmd = "#{problem_home}/script/#{REAL_CHECK_SCRIPT} " +
   "#{language} #{test_num} #{input_file_name} #{output_file_name} " +
   "#{answer_file_name} #{score} > check_result"
 
+#puts "wrapper-CMD: #{cmd}"
+
+system(cmd)

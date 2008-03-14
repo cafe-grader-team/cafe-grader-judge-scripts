@@ -1,5 +1,10 @@
 #!/usr/bin/ruby
 
+CORRECT_MARK = 'P'
+INCORRECT_MARK = '-'
+TIMEOUT_MARK = 'T'
+RUN_ERROR_MARK = 'x'
+
 def log(str='')
   if ENV['TALKATIVE']!=nil
     puts str
@@ -14,13 +19,13 @@ end
 
 def char_comment(comment)
   if comment =~ /[iI]ncorrect/
-    '-'
+    INCORRECT_MARK
   elsif comment =~ /[Cc]orrect/
-    'P'
+    CORRECT_MARK
   elsif comment =~ /[Tt]ime/
-    'T'
+    TIMEOUT_MARK
   else
-    'x'  # these are run time errors
+    RUN_ERROR_MARK  # these are run time errors
   end
 end
 
@@ -46,7 +51,7 @@ all_comment = ''
     result_file_name = "#{test_num}/result"
     if not File.exists?(result_file_name)
       run_comment += "result file for test #{test_num} not found\n"
-      run_comment_short += 'x'
+      run_comment_short += RUN_ERROR_MARK
       log "Cannot find the file #{test_num}/result!"
     else
       result_file = File.new(result_file_name, "r")

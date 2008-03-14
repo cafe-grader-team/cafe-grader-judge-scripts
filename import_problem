@@ -102,11 +102,11 @@ if res = /^wrapper:(.*)$/.match(check_script)
   # wrapper script
   check_script_fname = res[1]
   script_name = File.basename(check_script_fname)
-  check_wrapper_template = File.open(SCRIPT_DIR + "/templates/check_wrapper")
-  check_wrapper = ERB.new(template)
+  check_wrapper_template = File.open(SCRIPT_DIR + "/templates/check_wrapper").read
+  check_wrapper = ERB.new(check_wrapper_template)
 
   check_file = File.open("#{problem}/script/check","w")
-  check_file.puts check_wrapper
+  check_file.puts check_wrapper.result
   check_file.close
 
   File.chmod(0755,"#{problem}/script/check")
