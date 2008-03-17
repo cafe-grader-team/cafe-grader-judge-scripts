@@ -90,7 +90,11 @@ describe "A grader engine, when grading submissions" do
   end
 
   it "should fail submission with non-zero exit status" do
-    violated("has not been implemented")
+    grader_should(:grade => "add_nonzero_exit_status.c",
+                  :on => @problem_test_normal,
+                  :and_report => {
+                    :score => 0,
+                    :comment => /^FAILED:/})
   end
 
   def grader_should(args)
