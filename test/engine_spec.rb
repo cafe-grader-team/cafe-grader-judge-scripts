@@ -81,6 +81,14 @@ describe "A grader engine, when grading submissions" do
                     :comment => /FAILED: [^P]P/})
   end
 
+  it "should score test runs correctly when submission fails in some test case" do
+    grader_should(:grade => "add_fail_test_case_1.c",
+                  :on => @problem_test_normal,
+                  :and_report => {
+                    :score => 105,
+                    :comment => /^FAILED:/})
+  end
+
   it "should fail submission with non-zero exit status" do
     violated("has not been implemented")
   end

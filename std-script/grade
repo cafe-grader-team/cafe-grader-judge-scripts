@@ -62,6 +62,15 @@ all_comment = ''
       result_file.close
     end
   end
+
+  # find total score for this run
+  run_total_score = 0
+  problem = Problem.get_instance
+  run.tests.each { |test_num| run_total_score += problem.get_score(test_num) }
+
+  if run_total_score!=run_score   # fail in some test cases, fail the run
+    run_score = 0
+  end
   
   run_result_file = File.new("result-#{k}", "w")
   run_result_file.write run_score
@@ -73,6 +82,11 @@ all_comment = ''
   run_comment_file.close
 
   all_score = all_score + run_score
+
+  # append comment for test run with many test cases
+  if run.tests.length > 1 
+    run_comment_short = '[' + run_comment_short + ']'
+  end
   all_comment += run_comment_short
 end
 
