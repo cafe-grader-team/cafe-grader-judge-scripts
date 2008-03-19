@@ -48,9 +48,13 @@ module Grader
     protected
     def read_result(test_result_dir)
       cmp_msg_fname = "#{test_result_dir}/compiler_message"
-      cmp_file = File.open(cmp_msg_fname)
-      cmp_msg = cmp_file.read
-      cmp_file.close
+      if FileTest.exist?(cmp_msg_fname)
+        cmp_file = File.open(cmp_msg_fname)
+        cmp_msg = cmp_file.read
+        cmp_file.close
+      else
+        cmp_msg = ""
+      end
       
       result_fname = "#{test_result_dir}/result"
       comment_fname = "#{test_result_dir}/comment"  
