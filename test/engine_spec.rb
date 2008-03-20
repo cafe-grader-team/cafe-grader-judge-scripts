@@ -97,6 +97,28 @@ describe "A grader engine, when grading submissions" do
                     :comment => /^FAILED:/})
   end
 
+  it "should not allow malicious submission to see PROBLEM_HOME" do
+    problem_test_yesno =  stub(Problem,
+                                :id => 1, :name => 'test_yesno', 
+                                :full_score => 10)
+    grader_should(:grade => "yesno_access_problem_home.c",
+                  :on => problem_test_yesno,
+                  :and_report => {
+                    :score => 0,
+                    :comment => /^FAILED:/})
+  end
+
+  it "should not allow malicious submission to open files" do
+    problem_test_yesno =  stub(Problem,
+                                :id => 1, :name => 'test_yesno', 
+                                :full_score => 10)
+    grader_should(:grade => "yesno_open_file.c",
+                  :on => problem_test_yesno,
+                  :and_report => {
+                    :score => 0,
+                    :comment => /^FAILED:/})
+  end
+
   def grader_should(args)
     @user1 = stub(User,
                   :id => 1, :login => 'user1')

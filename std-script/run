@@ -76,12 +76,18 @@ if !File.exists?("#{problem_home}/script/box")
               "#{problem_home}/script/box")
 end
 
+# Hide PROBLEM_HOME
+ENV['PROBLEM_HOME'] = nil
+
 # Run the program.
 run_command = "/usr/bin/time -f \"#{time_output_format}\" 2>run_result #{problem_home}/script/box -a 2 -f -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name}"
 log "Running test #{test_num}..."
 log run_command
 log 
 system(run_command)
+
+# Restore PROBLEM_HOME
+ENV['PROBLEM_HOME'] = problem_home
 
 # Create the result file. 
 result_file = File.new("result", "w") 
