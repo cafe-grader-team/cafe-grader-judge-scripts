@@ -29,7 +29,7 @@ module Grader
         puts "user: #{u.login}"
         last_sub = Submission.find(:first,
                                    :conditions => "user_id = #{u.id} and " +
-                                                  "problem_id = #{prob.id}",
+                                                  "problem_id = #{problem.id}",
                                    :order => 'submitted_at DESC')
         if last_sub!=nil
           @engine.grade(last_sub)
