@@ -42,8 +42,10 @@ module Grader
     def report_comment(comment)
       case comment_report_style
       when :short
-        if comment.chomp =~ /^P+$/    # all P's
+        if comment.chomp =~ /^[\[\]P]+$/    # all P's
           'passed'
+        elsif comment.chomp =~ /[Cc]ompil.*[Ee]rror/
+          'compilation error'
         else
           'failed'
         end

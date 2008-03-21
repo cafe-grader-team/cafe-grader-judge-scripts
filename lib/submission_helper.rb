@@ -87,7 +87,7 @@ module Grader
             :cmp_msg => cmp_msg}
         else
           return {:points => 0,
-            :comment => 'compile error',
+            :comment => 'compilation error',
             :cmp_msg => cmp_msg}
         end
       end
@@ -103,6 +103,8 @@ module Grader
         submission.grader_comment = 'PASSED: ' + comment + '(problem is nil)'
       elsif points == problem.full_score
         submission.grader_comment = 'PASSED: ' + comment
+      elsif result[:comment].chomp =~ /^[\[\]P]+$/
+        submission.grader_comment = 'PASSED: ' + comment + '(inconsistent score)'
       else
         submission.grader_comment = 'FAILED: ' + comment
       end

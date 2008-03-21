@@ -33,7 +33,7 @@ describe "A grader engine, when grading submissions" do
                   :on => @problem_test_normal,
                   :and_report => {
                     :score => 0,
-                    :comment => 'FAILED: compile error',
+                    :comment => 'FAILED: compilation error',
                     :compiler_message => /[Ee]rror/})
   end
 
