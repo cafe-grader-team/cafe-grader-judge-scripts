@@ -149,7 +149,7 @@ module Grader
       else
         time_stat = "Time used: n/a sec."
       end
-      return "#{run_stat}#{time_stat}"
+      return "#{run_stat}\n#{time_stat}"
     end
     
     def save_result(test_request,result)
