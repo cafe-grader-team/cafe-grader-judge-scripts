@@ -11,7 +11,7 @@ int main()
   printf("%d\n",a+b);
 
   for(a=0; a<2; a++) {
-    while(c<1150000000) {
+    while(c<1550000000) {
       c++;
       b+=c;
     }

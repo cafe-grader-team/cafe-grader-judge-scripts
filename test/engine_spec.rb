@@ -232,7 +232,7 @@ describe "A grader engine, when grading test requests" do
                     :graded_at= => nil,
                     :compiler_message= => '',
                     :grader_comment= => '',
-                    :running_stat= => /[Ee]xit.*status.*10.*0.0 sec./,
+                    :running_stat= => /[Ee]xit.*status.*10.*0\.0 sec/m,
                     :output_file_name= => lambda { |fname|
                       File.exists?(fname).should be_true
                     },

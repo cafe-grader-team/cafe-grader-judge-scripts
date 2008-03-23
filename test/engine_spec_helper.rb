@@ -9,7 +9,7 @@ module GraderEngineHelperMethods
   def init_sandbox
     config = Grader::Configuration.get_instance
     clear_sandbox
-    Dir.mkdir config.user_result_dir
+    FileUtils.mkdir_p config.user_result_dir
     cp_cmd = "cp -R #{config.test_data_dir}/ev #{config.test_sandbox_dir}"
     system(cp_cmd)
   end
