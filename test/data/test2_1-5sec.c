@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 int main()
 {
@@ -10,11 +11,12 @@ int main()
   scanf("%d %d",&a,&b);
   printf("%d\n",a+b);
 
-  for(a=0; a<2; a++) {
-    while(c<1550000000) {
-      c++;
-      b+=c;
-    }
+  sleep(1);
+
+  c = 0;
+  while(c<1000000000) {
+    c++;
+    b+=c;
   }
   exit(0);
 }

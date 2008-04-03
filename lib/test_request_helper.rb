@@ -104,7 +104,7 @@ module Grader
     end
 
     def report_error(test_request, msg)
-      save_result(test_request, {:running_stat => "#{msg}"})
+      save_result(test_request, {:running_stat => {:msg => "#{msg}"}})
     end
     
     protected
@@ -129,7 +129,7 @@ module Grader
           :cmp_msg => cmp_msg}
       else
         return {
-          :running_stat => "",
+          :running_stat => nil,
           :comment => "Compilation error", 
           :cmp_msg => cmp_msg}
       end
@@ -138,18 +138,27 @@ module Grader
     def format_running_stat(results)
       running_time_line = results[-1]
 
+      # extract exit status line
       run_stat = ""
       if !(/[Cc]orrect/.match(results[0]))
         run_stat = results[0].chomp
+      else
+        run_stat = 'Program exited normally'
       end
 
+      # extract running time
       if res = /r(.*)u(.*)s/.match(running_time_line)
         seconds = (res[1].to_f + res[2].to_f)
         time_stat = "Time used: #{seconds} sec."
       else
+        seconds = nil
         time_stat = "Time used: n/a sec."
       end
-      return "#{run_stat}\n#{time_stat}"
+      return {
+        :msg => "#{run_stat}\n#{time_stat}",
+        :running_time => seconds,
+        :exit_status => run_stat
+      }
     end
     
     def save_result(test_request,result)
@@ -160,7 +169,14 @@ module Grader
       test_request.graded_at = Time.now
       test_request.compiler_message = (result[:cmp_msg] or '')
       test_request.grader_comment = (result[:comment] or '')
-      test_request.running_stat = (result[:running_stat] or '')
+      if result[:running_stat]!=nil
+        test_request.running_stat = (result[:running_stat][:msg] or '')
+        test_request.running_time = (result[:running_stat][:running_time] or nil)
+        test_request.exit_status = (result[:running_stat][:exit_status])
+        test_request.memory_usage = nil  # should be added later
+      else
+        test_request.running_stat = ''
+      end
       test_request.save
     end
     

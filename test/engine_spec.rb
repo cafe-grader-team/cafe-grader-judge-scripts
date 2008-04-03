@@ -172,6 +172,9 @@ describe "A grader engine, when grading test requests" do
                     :compiler_message= => '',
                     :grader_comment= => '',
                     :running_stat= => /template not found/,
+                    :running_time= => nil,
+                    :exit_status= => nil,
+                    :memory_usage= => nil,
                     :save => nil})
   end
 
@@ -189,6 +192,9 @@ describe "A grader engine, when grading test requests" do
                     :output_file_name= => lambda { |fname|
                       File.exists?(fname).should be_true
                     },
+                    :running_time= => nil,
+                    :exit_status= => nil,
+                    :memory_usage= => nil,
                     :save => nil})
   end
 
@@ -204,6 +210,9 @@ describe "A grader engine, when grading test requests" do
                     :grader_comment= => '',
                     :running_stat= => nil, 
                     :output_file_name= => nil,
+                    :running_time= => nil,
+                    :exit_status= => nil,
+                    :memory_usage= => nil,
                     :save => nil})
     File.exists?(@config.user_result_dir + "/test_request/test_normal/test_cases/1/input-1.txt").should be_false
   end
@@ -236,6 +245,9 @@ describe "A grader engine, when grading test requests" do
                     :output_file_name= => lambda { |fname|
                       File.exists?(fname).should be_true
                     },
+                    :running_time= => nil,
+                    :exit_status= => /10/,
+                    :memory_usage= => nil,
                     :save => nil})
   end
 
