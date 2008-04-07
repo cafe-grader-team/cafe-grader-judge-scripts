@@ -5,7 +5,7 @@
  */
 
 #define _LARGEFILE64_SOURCE
-#define _GNU_SOURCE
+//#define _GNU_SOURCE
 
 #include <errno.h>
 #include <stdio.h>
@@ -67,6 +67,18 @@ box_exit(void)
   exit(1);
 }
 
+static void
+box_kill(void)
+{
+  if (box_pid > 0)
+    {
+      if (is_ptraced)
+	ptrace(PTRACE_KILL, box_pid);
+      kill(-box_pid, SIGKILL);
+      kill(box_pid, SIGKILL);
+    }
+}
+
 static void NONRET __attribute__((format(printf,1,2)))
 die(char *msg, ...)
 {
@@ -75,6 +87,16 @@ die(char *msg, ...)
   vfprintf(stderr, msg, args);
   fputc('\n', stderr);
   box_exit();
+}
+
+static void  __attribute__((format(printf,1,2)))
+die_report(char *msg, ...)
+{
+  va_list args;
+  va_start(args, msg);
+  vfprintf(stderr, msg, args);
+  fputc('\n', stderr);
+  box_kill();
 }
 
 static void __attribute__((format(printf,1,2)))
@@ -271,7 +293,9 @@ signal_alarm(int unused UNUSED)
 {
   /* Time limit checks are synchronous, so we only schedule them there. */
   timer_tick = 1;
-  alarm(1);
+
+  //NOTE: do not use alarm, changed to setitimer for precision
+  //  alarm(1);
 }
 
 static void
@@ -319,12 +343,37 @@ check_timeout(void)
 	x++;
       if (sscanf(x, "%*c %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %d %d", &utime, &stime) != 2)
 	die("proc syntax error 2");
-      sec = (utime + stime)/ticks_per_sec;
+      //printf("%s - %d\n",x,ticks_per_sec);
+      sec = (utime + stime + ticks_per_sec-1)/ticks_per_sec;
     }
   if (verbose > 1)
     fprintf(stderr, "[timecheck: %d seconds]\n", sec);
-  if (sec > timeout)
-    die("Time limit exceeded.");
+  if (sec > timeout) {
+    die_report("Time limit exceeded.");
+  }
+}
+
+int max_mem_used = 0;
+
+static void
+check_memory_usage()
+{
+  char proc_fname[100];
+  sprintf(proc_fname,"/proc/%d/statm",box_pid);
+  //printf("proc fname: %s\n",proc_fname);
+  FILE *fp = fopen(proc_fname,"r");
+  if(fp!=NULL) {
+    char line[1000];
+    fgets(line,999,fp);
+    //printf("%s\n",line);
+    int m;
+
+    if(sscanf(line,"%d",&m)==1)
+      if(m>max_mem_used)
+	max_mem_used = m;
+
+    fclose(fp);
+  } 
 }
 
 static void
@@ -341,23 +390,48 @@ boxkeeper(void)
   ticks_per_sec = sysconf(_SC_CLK_TCK);
   if (ticks_per_sec <= 0)
     die("Invalid ticks_per_sec!");
+
+  check_memory_usage();
+  
+  sa.sa_handler = signal_alarm;
+  sigaction(SIGALRM, &sa, NULL);
+  //alarm(1);
+
+  struct itimerval val;
+  val.it_interval.tv_sec = 0;
+  val.it_interval.tv_usec = 50000;
+  val.it_value.tv_sec = 0;
+  val.it_value.tv_usec = 50000;
+  setitimer(ITIMER_REAL,&val,NULL);
+
+  /*
+    --- add alarm handler no matter what..
   if (timeout)
     {
       sa.sa_handler = signal_alarm;
       sigaction(SIGALRM, &sa, NULL);
       alarm(1);
     }
+  */
+
   for(;;)
     {
       struct rusage rus;
       int stat;
       pid_t p;
+
       if (timer_tick)
 	{
 	  check_timeout();
 	  timer_tick = 0;
 	}
       p = wait4(box_pid, &stat, WUNTRACED, &rus);
+
+      if(!WIFEXITED(stat)) {
+	//	printf("CHECKING\n");
+	check_memory_usage();
+      }
+
       if (p < 0)
 	{
 	  if (errno == EINTR)
@@ -370,20 +444,52 @@ boxkeeper(void)
 	{
 	  struct timeval total;
 	  int wall;
+	  wall = time(NULL) - start_time;
+	  timeradd(&rus.ru_utime, &rus.ru_stime, &total);
+
 	  box_pid = 0;
 	  if (WEXITSTATUS(stat))
-	    die("Exited with error status %d.", WEXITSTATUS(stat));
-	  timeradd(&rus.ru_utime, &rus.ru_stime, &total);
-	  wall = time(NULL) - start_time;
-	  if ((use_wall_clock ? wall : total.tv_sec) > timeout)
-	    die("Time limit exceeded (after exit).");
-	  fprintf(stderr, "OK (%d sec real, %d sec wall, %d syscalls)\n", (int) total.tv_sec, wall, syscall_count);
+	    fprintf(stderr,"Exited with error status %d.", WEXITSTATUS(stat));
+	  else if ((use_wall_clock ? wall : total.tv_sec) > timeout)
+	    fprintf(stderr,"Time limit exceeded.");
+	  else
+	    // report OK and statistics
+	    fprintf(stderr,"OK\n");
+
+	  fprintf(stderr,"%dr%.4lfu%.4lfs%dm\n",
+		  wall,
+		  (double) rus.ru_utime.tv_sec + 
+		  ((double) rus.ru_utime.tv_usec/1000000.0),
+		  (double) rus.ru_stime.tv_sec + 
+		  ((double) rus.ru_stime.tv_usec/1000000.0),
+		  max_mem_used);
+/*
+	  (%.4lf sec real (%d), %d sec wall, %d syscalls, %d kb)\n", 
+		  (double) total.tv_sec + ((double)total.tv_usec / 1000000.0), 
+		  (int) total.tv_usec,
+		  wall, 
+		  syscall_count,
+		  max_mem_used);
+*/
 	  exit(0);
 	}
       if (WIFSIGNALED(stat))
 	{
 	  box_pid = 0;
-	  die("Caught fatal signal %d.", WTERMSIG(stat));
+	  fprintf(stderr,"Caught fatal signal %d.", WTERMSIG(stat));
+
+	  struct timeval total;
+	  int wall;
+	  wall = time(NULL) - start_time;
+	  timeradd(&rus.ru_utime, &rus.ru_stime, &total);
+	  fprintf(stderr,"%dr%.4lfu%.4lfs%dm\n",
+		  wall,
+		  (double) rus.ru_utime.tv_sec + 
+		  ((double) rus.ru_utime.tv_usec/1000000.0),
+		  (double) rus.ru_stime.tv_sec + 
+		  ((double) rus.ru_stime.tv_usec/1000000.0),
+		  max_mem_used);
+	  exit(0);
 	}
       if (WIFSTOPPED(stat))
 	{

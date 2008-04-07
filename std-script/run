@@ -13,15 +13,18 @@ def log(str='')
 end
 
 def extract_time(t)
+  #  puts "TIME: #{t}"
   if (result=/^(.*)r(.*)u(.*)s/.match(t))
     {:real => result[1], :user => result[2], :sys => result[3]}
   else
-    raise "Error reading running time"
+    #{:real => 0, :user => 0, :sys => 0}
+    #puts "ERROR READING RUNNING TIME: #{t}"
+    raise "Error reading running time: #{t}"
   end
 end
 
 def compile_box(source,bin)
-  system("gcc #{source} -o #{bin}")
+  system("g++ #{source} -o #{bin}")
 end
 
 if ARGV.length < 2 || ARGV.length > 3
@@ -67,12 +70,10 @@ mem_limit = problem.get_mem_limit(test_num) * 1024
 # Copy the input file.
 #`cp #{problem_home}/test_cases/#{test_num}/#{input_file_name} .`
 
-time_output_format = "%Er%Uu%Ss"
-
 # check if box is there, if not, compile it!
 if !File.exists?("#{problem_home}/script/box")
   log "WARNING: Compiling box: to increase efficiency, it should be compile manually"
-  compile_box("#{problem_home}/script/box.c",
+  compile_box("#{problem_home}/script/box.cc",
               "#{problem_home}/script/box")
 end
 
@@ -80,7 +81,8 @@ end
 ENV['PROBLEM_HOME'] = nil
 
 # Run the program.
-run_command = "/usr/bin/time -f \"#{time_output_format}\" 2>run_result #{problem_home}/script/box -a 2 -f -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name}"
+#run_command = "/usr/bin/time -f \"#{time_output_format}\" 2>run_result #{problem_home}/script/box_new -a 2 -f -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name}"
+run_command = "#{problem_home}/script/box -a 2 -f -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
 log "Running test #{test_num}..."
 log run_command
 log 
@@ -97,25 +99,29 @@ comment_file = File.new("comment", "w")
 run_result_file = File.new("run_result", "r")
 run_result = run_result_file.readlines
 run_result_file.close
-time_elapsed = run_result[run_result.length-1]
-running_time = extract_time(time_elapsed)
+
+run_stat = run_result[run_result.length-1]
+running_time = extract_time(run_stat)
 
 report = lambda{ |status, points, comment|
   result_file.write status.strip
   result_file.write "\n" 
   result_file.write points.to_s.strip
   result_file.write "\n" 
-  result_file.write time_elapsed.strip 
+  result_file.write run_stat.strip 
   result_file.write "\n"
   result_file.close 
   `rm run_result`
   # `rm output.txt`   --- keep the output
 
   comment_file.write comment
+
+  # added for debuggin --- jittat
   comment_file.write "--run-result--\n"
   run_result.each do |l|
     comment_file.write l
   end
+
   comment_file.close
 
   log "Done!"

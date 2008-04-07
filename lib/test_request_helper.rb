@@ -120,7 +120,7 @@ module Grader
       if File.exists?(result_file_name)
         output_file_name = "#{test_result_dir}/1/output.txt"
         results = File.open("#{test_result_dir}/1/result").readlines
-        stat = format_running_stat(results)
+        stat = extract_running_stat(results)
 
         return {
           :output_file_name => output_file_name,
@@ -135,8 +135,8 @@ module Grader
       end
     end
 
-    def format_running_stat(results)
-      running_time_line = results[-1]
+    def extract_running_stat(results)
+      running_stat_line = results[-1]
 
       # extract exit status line
       run_stat = ""
@@ -147,17 +147,26 @@ module Grader
       end
 
       # extract running time
-      if res = /r(.*)u(.*)s/.match(running_time_line)
+      if res = /r(.*)u(.*)s/.match(running_stat_line)
         seconds = (res[1].to_f + res[2].to_f)
         time_stat = "Time used: #{seconds} sec."
       else
         seconds = nil
         time_stat = "Time used: n/a sec."
       end
+
+      # extract memory usage
+      if res = /s(.*)m/.match(running_stat_line)
+        memory_used = res[1].to_i
+      else
+        memory_used = -1
+      end
+
       return {
         :msg => "#{run_stat}\n#{time_stat}",
         :running_time => seconds,
-        :exit_status => run_stat
+        :exit_status => run_stat,
+        :memory_usage => memory_used
       }
     end
     
@@ -172,8 +181,8 @@ module Grader
       if result[:running_stat]!=nil
         test_request.running_stat = (result[:running_stat][:msg] or '')
         test_request.running_time = (result[:running_stat][:running_time] or nil)
-        test_request.exit_status = (result[:running_stat][:exit_status])
-        test_request.memory_usage = nil  # should be added later
+        test_request.exit_status = result[:running_stat][:exit_status]
+        test_request.memory_usage = result[:running_stat][:memory_usage]
       else
         test_request.running_stat = ''
       end

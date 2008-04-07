@@ -251,6 +251,30 @@ describe "A grader engine, when grading test requests" do
                     :save => nil})
   end
 
+  it "should produce running statistics for normal submission" do
+    problem = stub(Problem,
+                   :id => 1, :name => 'test_normal')
+    grader_should(:grade => 'test_run_stat.c',
+                  :on => problem,
+                  :with => 'in1.txt',
+                  :and_report => {
+                    :graded_at= => nil,
+                    :compiler_message= => '',
+                    :grader_comment= => '',
+                    :running_stat= => nil,
+                    :output_file_name= => lambda { |fname|
+                      File.exists?(fname).should be_true
+                    },
+                    :running_time= => lambda { |t|
+                      (t>=0.14) and (t<=0.16)
+                    },
+                    :exit_status= => nil,
+                    :memory_usage= => lambda { |s|
+                      (s>=500) and (s<=1000)
+                    },
+                    :save => nil})
+  end
+
   protected
   def grader_should(args)
     @user1 = stub(User,
