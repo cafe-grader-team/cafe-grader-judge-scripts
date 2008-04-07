@@ -188,7 +188,7 @@ describe "A grader engine, when grading test requests" do
                     :graded_at= => nil,
                     :compiler_message= => '',
                     :grader_comment= => '',
-                    :running_stat= => /0.0 sec./, 
+                    :running_stat= => /0.0\d* sec./, 
                     :output_file_name= => lambda { |fname|
                       File.exists?(fname).should be_true
                     },
