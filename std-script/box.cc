@@ -423,14 +423,10 @@ boxkeeper(void)
       if (timer_tick)
 	{
 	  check_timeout();
+	  check_memory_usage();
 	  timer_tick = 0;
 	}
       p = wait4(box_pid, &stat, WUNTRACED, &rus);
-
-      if(!WIFEXITED(stat)) {
-	//	printf("CHECKING\n");
-	check_memory_usage();
-      }
 
       if (p < 0)
 	{
@@ -449,9 +445,9 @@ boxkeeper(void)
 
 	  box_pid = 0;
 	  if (WEXITSTATUS(stat))
-	    fprintf(stderr,"Exited with error status %d.", WEXITSTATUS(stat));
+	    fprintf(stderr,"Exited with error status %d.\n", WEXITSTATUS(stat));
 	  else if ((use_wall_clock ? wall : total.tv_sec) > timeout)
-	    fprintf(stderr,"Time limit exceeded.");
+	    fprintf(stderr,"Time limit exceeded.\n");
 	  else
 	    // report OK and statistics
 	    fprintf(stderr,"OK\n");
@@ -476,7 +472,7 @@ boxkeeper(void)
       if (WIFSIGNALED(stat))
 	{
 	  box_pid = 0;
-	  fprintf(stderr,"Caught fatal signal %d.", WTERMSIG(stat));
+	  fprintf(stderr,"Caught fatal signal %d.\n", WTERMSIG(stat));
 
 	  struct timeval total;
 	  int wall;
