@@ -75,7 +75,17 @@ module Grader
     end
     
     def link_input_file(test_request,problem_home)
-      cmd = "ln -s #{test_request.input_file_name} #{problem_home}/test_cases/1/input-1.txt"
+      input_fname = "#{test_request.input_file_name}"
+      if !File.exists?(input_fname)
+        raise "Test Request: input file not found."
+      end
+
+      input_fname_problem_home = "#{problem_home}/test_cases/1/input-1.txt"
+      if File.exists?(input_fname_problem_home)
+        FileUtils.rm([input_fname_problem_home], :force => true)
+      end
+
+      cmd = "ln -s #{input_fname} #{input_fname_problem_home}" 
       system_and_raise_when_fail(cmd,"Test Request: cannot link input file")
     end
     
@@ -104,7 +114,12 @@ module Grader
     end
 
     def report_error(test_request, msg)
-      save_result(test_request, {:running_stat => {:msg => "#{msg}"}})
+      save_result(test_request, {:running_stat => {
+                      :msg => "#{msg}",
+                      :running_time => nil,
+                      :exit_status => "Some error occured. Program did not run",
+                      :memory_usage => nil
+                    }})
     end
     
     protected
