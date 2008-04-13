@@ -54,29 +54,57 @@ extern loff_t llseek(int fd, loff_t pos, int whence);
 #define long_seek(f,o,w) llseek(f,o,w)
 #endif
 
+int max_mem_used = 0;
+
+void print_running_stat(double wall_time,
+			double user_time,
+			double system_time,
+			int mem_usage)
+{
+  fprintf(stderr,"%.4lfr%.4lfu%.4lfs%dm\n", 
+	  wall_time, user_time, system_time, mem_usage);
+}
+
 static void NONRET
 box_exit(void)
 {
-  if (box_pid > 0)
-    {
-      if (is_ptraced)
-	ptrace(PTRACE_KILL, box_pid);
-      kill(-box_pid, SIGKILL);
-      kill(box_pid, SIGKILL);
-    }
-  exit(1);
-}
+  if (box_pid > 0) {
+    if (is_ptraced)
+      ptrace(PTRACE_KILL, box_pid);
+    kill(-box_pid, SIGKILL);
+    kill(box_pid, SIGKILL);
+  }
 
-static void
-box_kill(void)
-{
-  if (box_pid > 0)
-    {
-      if (is_ptraced)
-	ptrace(PTRACE_KILL, box_pid);
-      kill(-box_pid, SIGKILL);
-      kill(box_pid, SIGKILL);
-    }
+  struct timeval total;
+  int wall;
+  struct rusage rus;
+  int stat;
+  pid_t p;
+  
+  // wait so that we can get information
+  p = wait4(box_pid, &stat, WUNTRACED, &rus);
+  if (p < 0) {
+    fprintf(stderr,"wait4: error\n");
+    print_running_stat(0,0,0,max_mem_used);
+  } else if (p != box_pid) {
+    fprintf(stderr,"wait4: unknown pid %d exited!\n", p);
+    print_running_stat(0,0,0,max_mem_used);
+  } else {
+    if (!WIFEXITED(stat))
+      fprintf(stderr,"wait4: unknown status\n");
+    struct timeval total;
+    int wall;
+    wall = time(NULL) - start_time;
+    timeradd(&rus.ru_utime, &rus.ru_stime, &total);
+    
+    print_running_stat((double)wall,
+		       (double) rus.ru_utime.tv_sec + 
+		       ((double) rus.ru_utime.tv_usec/1000000.0),
+		       (double) rus.ru_stime.tv_sec + 
+		       ((double) rus.ru_stime.tv_usec/1000000.0),
+		       max_mem_used);
+  }
+  exit(1);
 }
 
 static void NONRET __attribute__((format(printf,1,2)))
@@ -87,16 +115,6 @@ die(char *msg, ...)
   vfprintf(stderr, msg, args);
   fputc('\n', stderr);
   box_exit();
-}
-
-static void  __attribute__((format(printf,1,2)))
-die_report(char *msg, ...)
-{
-  va_list args;
-  va_start(args, msg);
-  vfprintf(stderr, msg, args);
-  fputc('\n', stderr);
-  box_kill();
 }
 
 static void __attribute__((format(printf,1,2)))
@@ -349,11 +367,9 @@ check_timeout(void)
   if (verbose > 1)
     fprintf(stderr, "[timecheck: %d seconds]\n", sec);
   if (sec > timeout) {
-    die_report("Time limit exceeded.");
+    die("Time limit exceeded.");
   }
 }
-
-int max_mem_used = 0;
 
 static void
 check_memory_usage()
@@ -452,13 +468,12 @@ boxkeeper(void)
 	    // report OK and statistics
 	    fprintf(stderr,"OK\n");
 
-	  fprintf(stderr,"%dr%.4lfu%.4lfs%dm\n",
-		  wall,
-		  (double) rus.ru_utime.tv_sec + 
-		  ((double) rus.ru_utime.tv_usec/1000000.0),
-		  (double) rus.ru_stime.tv_sec + 
-		  ((double) rus.ru_stime.tv_usec/1000000.0),
-		  max_mem_used);
+	  print_running_stat((double) wall,
+			     (double) rus.ru_utime.tv_sec + 
+			     ((double) rus.ru_utime.tv_usec/1000000.0),
+			     (double) rus.ru_stime.tv_sec + 
+			     ((double) rus.ru_stime.tv_usec/1000000.0),
+			     max_mem_used);
 /*
 	  (%.4lf sec real (%d), %d sec wall, %d syscalls, %d kb)\n", 
 		  (double) total.tv_sec + ((double)total.tv_usec / 1000000.0), 
@@ -478,13 +493,12 @@ boxkeeper(void)
 	  int wall;
 	  wall = time(NULL) - start_time;
 	  timeradd(&rus.ru_utime, &rus.ru_stime, &total);
-	  fprintf(stderr,"%dr%.4lfu%.4lfs%dm\n",
-		  wall,
-		  (double) rus.ru_utime.tv_sec + 
-		  ((double) rus.ru_utime.tv_usec/1000000.0),
-		  (double) rus.ru_stime.tv_sec + 
-		  ((double) rus.ru_stime.tv_usec/1000000.0),
-		  max_mem_used);
+	  print_running_stat((double) wall,
+			     (double) rus.ru_utime.tv_sec + 
+			     ((double) rus.ru_utime.tv_usec/1000000.0),
+			     (double) rus.ru_stime.tv_sec + 
+			     ((double) rus.ru_stime.tv_usec/1000000.0),
+			     max_mem_used);
 	  exit(0);
 	}
       if (WIFSTOPPED(stat))
