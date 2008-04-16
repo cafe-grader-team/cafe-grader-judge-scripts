@@ -41,7 +41,7 @@ SCRIPT_DIR = File.dirname(__FILE__)
 if (ARGV.length < 4) or (ARGV[3][0,1]=="-")
   puts <<USAGE
 using: import_problem name dir num check [options]
-   where: name = problem_name [
+   where: name = problem_name (put '-' (dash) to use dir name)
           dir = importing testcase directory
           num = number of testcases
           check = check script, which can be 
@@ -65,6 +65,7 @@ end
 # processing arguments
 problem = ARGV[0]
 testcase_dir = ARGV[1]
+problem = File.basename(testcase_dir) if problem=="-"
 num_testcases = ARGV[2].to_i
 check_script = ARGV[3]
 options = {:time_limit => 1,  :mem_limit => 16}
