@@ -44,6 +44,7 @@ static int is_ptraced;
 static volatile int timer_tick;
 static time_t start_time;
 static int ticks_per_sec;
+static int page_size;
 
 #if defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ > 0
 /* glibc 2.1 or newer -> has lseek64 */
@@ -384,9 +385,11 @@ check_memory_usage()
     //printf("%s\n",line);
     int m;
 
-    if(sscanf(line,"%d",&m)==1)
+    if(sscanf(line,"%d",&m)==1) {
+      m = (m*page_size+1023)/1024;
       if(m>max_mem_used)
 	max_mem_used = m;
+    }
 
     fclose(fp);
   } 
@@ -404,6 +407,7 @@ boxkeeper(void)
   sigaction(SIGINT, &sa, NULL);
   start_time = time(NULL);
   ticks_per_sec = sysconf(_SC_CLK_TCK);
+  page_size = getpagesize();
   if (ticks_per_sec <= 0)
     die("Invalid ticks_per_sec!");
 
