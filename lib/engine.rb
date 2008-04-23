@@ -32,9 +32,16 @@ module Grader
         @reporter.report_error(submission,"Grading error: problem with submission")
         #raise "engine: user or problem is nil"
       end
-      
-      language = submission.language.name
-      lang_ext = submission.language.ext
+
+      # TODO: this is another hack so that output only task can be judged
+      if submission.language!=nil
+        language = submission.language.name
+        lang_ext = submission.language.ext
+      else
+        language = 'c'
+        lang_ext = 'c'
+      end
+
       # FIX THIS
       talk 'some hack on language'
       if language == 'cpp'
