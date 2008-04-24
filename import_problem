@@ -24,7 +24,7 @@ def process_options(options)
   i = 4
   while i<ARGV.length
     if ARGV[i]=='-t'
-      options[:time_limit] = ARGV[i+1].to_i if ARGV.length>i+1
+      options[:time_limit] = ARGV[i+1].to_f if ARGV.length>i+1
       i += 1
     end
     if ARGV[i]=='-m'
