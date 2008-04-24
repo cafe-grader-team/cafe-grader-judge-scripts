@@ -29,7 +29,7 @@
 #define UNUSED __attribute__((unused))
 
 static int filter_syscalls;		/* 0=off, 1=liberal, 2=totalitarian */
-static int timeout;
+static double timeout;
 static int pass_environ;
 static int use_wall_clock;
 static int file_access;
@@ -327,10 +327,10 @@ signal_int(int unused UNUSED)
 static void
 check_timeout(void)
 {
-  int sec;
+  double sec;
 
   if (use_wall_clock)
-    sec = time(NULL) - start_time;
+    sec = (double)(time(NULL) - start_time);
   else
     {
       char buf[4096], *x;
@@ -363,12 +363,12 @@ check_timeout(void)
       if (sscanf(x, "%*c %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %d %d", &utime, &stime) != 2)
 	die("proc syntax error 2");
       //printf("%s - %d\n",x,ticks_per_sec);
-      sec = (utime + stime + ticks_per_sec-1)/ticks_per_sec;
+      sec = ((double)(utime + stime))/(double)ticks_per_sec;
     }
   if (verbose > 1)
     fprintf(stderr, "[timecheck: %d seconds]\n", sec);
   if (sec > timeout) {
-    die("Time limit exceeded.");
+    die("Time limit exceeded.",sec,timeout);
   }
 }
 
@@ -466,7 +466,10 @@ boxkeeper(void)
 	  box_pid = 0;
 	  if (WEXITSTATUS(stat))
 	    fprintf(stderr,"Exited with error status %d.\n", WEXITSTATUS(stat));
-	  else if ((use_wall_clock ? wall : total.tv_sec) > timeout)
+	  else if ((use_wall_clock ? 
+		    wall : 
+		    (double) total.tv_sec + 
+		    ((double) total.tv_usec/1000000.0)) > timeout)
 	    fprintf(stderr,"Time limit exceeded.\n");
 	  else
 	    // report OK and statistics
@@ -646,7 +649,7 @@ main(int argc, char **argv)
 	redir_stdout = optarg;
 	break;
       case 't':
-	timeout = atol(optarg);
+	timeout = atof(optarg);
 	break;
       case 'T':
 	allow_times++;

@@ -167,11 +167,16 @@ when "prob"
 
   grader_proc.report_active if grader_proc!=nil
 
-  prob = Problem.find_by_name(ARGV[2])
-  if prob==nil
-    puts "cannot find problem: #{ARGV[2]}"
-  else
-    runner.grade_problem(prob)
+  ARGV.shift
+  ARGV.shift
+
+  ARGV.each do |prob_name|
+    prob = Problem.find_by_name(prob_name)
+    if prob==nil
+      puts "cannot find problem: #{prob_name}"
+    else
+      runner.grade_problem(prob)
+    end
   end
 
 else

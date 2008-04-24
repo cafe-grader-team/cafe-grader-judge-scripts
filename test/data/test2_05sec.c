@@ -5,6 +5,8 @@
 #include <time.h>
 #include <sys/resource.h>
 
+// run it for 1.5 s
+
 int main()
 {
   int a,b;
@@ -19,23 +21,18 @@ int main()
   while(1) {
     c++;
     b+=c;
-    while(c<1000000000) {
+    while(c<100000) {
       c++;
       b+=c;
     }
     getrusage(RUSAGE_SELF,&ru);
-    if((ru.ru_utime.tv_sec + ru.ru_stime.tv_sec)>=1)
+    double rtime = ru.ru_utime.tv_sec + ru.ru_stime.tv_sec;
+    rtime += (double)ru.ru_utime.tv_usec / 1000000.0;
+    rtime += (double)ru.ru_stime.tv_usec / 1000000.0;
+    if(rtime > 0.5)
       break;
   }
   printf("%d\n",b);
-  c=0;
-  while(c<100000000) {
-    c++;
-    b+=c;
-  }
-  if(b==10)
-    printf("hello\n");
-
   exit(0);
 }
 

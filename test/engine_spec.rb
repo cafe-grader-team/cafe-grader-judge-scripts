@@ -48,11 +48,11 @@ describe "A grader engine, when grading submissions" do
                     :comment => 'FAILED: TT'})
   end
 
-  it "should produce timeout error correctly when submission runs slower than expected in less than a second" do
-    @problem_test_timeout = stub(Problem,
+  it "should produce timeout error correctly with fractional running time and fractional time limits" do
+     @problem_test_timeout = stub(Problem,
                                  :id => 1, :name => 'test_timeout', 
                                  :full_score => 20)
-    grader_should(:grade => "test2_1-5sec.c",
+    grader_should(:grade => "test2_05sec.c",
                   :on => @problem_test_timeout,
                   :and_report => {
                     :score => 10,
