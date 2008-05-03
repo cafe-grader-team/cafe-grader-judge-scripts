@@ -257,6 +257,9 @@ valid_syscall(struct user *u)
     case __NR_uname:
     case 252:
     case 243:
+// added for free pascal
+    case __NR_ugetrlimit:
+    case __NR_readlink:
       return 1;
       //    case __NR_time:
     case __NR_alarm:

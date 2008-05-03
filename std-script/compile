@@ -5,7 +5,7 @@
 # Standard Compile Script 
 #
 # Supported compilers: 
-#   gcc, g++, and gpc.
+#   gcc, g++, and fpc.
 #
 ##############################
 
@@ -18,11 +18,11 @@ talk ()
 
 export C_COMPILER=/usr/bin/gcc
 export CPLUSPLUS_COMPILER=/usr/bin/g++
-export PASCAL_COMPILER=/usr/bin/gpc
+export PASCAL_COMPILER=/usr/bin/fpc
 
 export C_OPTIONS="-O2 -s -static -lm -Wall"
 export CPLUSPLUS_OPTIONS="-O2 -s -static -lm -Wall"
-export PASCAL_OPTIONS="-O2 -XS -lm -Wall"
+export PASCAL_OPTIONS="-O1 -XS"
 
 # Check for the correct number of arguments. Otherwise, print usage.
 if [ $# -eq 0 -o $# -gt 4 ]
@@ -86,9 +86,9 @@ then
 elif [ $PROG_LANG = "c++" ]
 then
     $CPLUSPLUS_COMPILER $SOURCE_FILE -o $OUTPUT_FILE $CPLUSPLUS_OPTIONS 2>$MESSAGE_FILE
-elif [ $PROG_LANG = "pascal" ]
+elif [ $PROG_LANG = "pas" ]
 then
-    $PASCAL_COMPILER $SOURCE_FILE -o $OUTPUT_FILE $PASCAL_OPTIONS 2>$MESSAGE_FILE
+    $PASCAL_COMPILER $SOURCE_FILE -o$OUTPUT_FILE $PASCAL_OPTIONS >$MESSAGE_FILE
 else
     talk "ERROR: Invalid language specified!"
     echo "ERROR: Invalid language specified!" > $MESSAGE_FILE

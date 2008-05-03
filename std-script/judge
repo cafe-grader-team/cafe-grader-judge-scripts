@@ -36,8 +36,8 @@ if ARGV.length < 2 || ARGV.length > 4
 end
 
 language = ARGV[0]
-if language != "c" && language != "c++" && language != "pascal"
-  log "You specified a language that is not supported."
+if language != "c" && language != "c++" && language != "pas"
+  log "You specified a language that is not supported: #{language}."
   exit(127)
 end
 
