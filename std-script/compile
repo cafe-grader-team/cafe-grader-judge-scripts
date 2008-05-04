@@ -88,7 +88,8 @@ then
     $CPLUSPLUS_COMPILER $SOURCE_FILE -o $OUTPUT_FILE $CPLUSPLUS_OPTIONS 2>$MESSAGE_FILE
 elif [ $PROG_LANG = "pas" ]
 then
-    $PASCAL_COMPILER $SOURCE_FILE -o$OUTPUT_FILE $PASCAL_OPTIONS >$MESSAGE_FILE
+    $PASCAL_COMPILER $SOURCE_FILE -ooutpas $PASCAL_OPTIONS >$MESSAGE_FILE
+    mv outpas $OUTPUT_FILE
 else
     talk "ERROR: Invalid language specified!"
     echo "ERROR: Invalid language specified!" > $MESSAGE_FILE
