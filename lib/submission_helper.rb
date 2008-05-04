@@ -95,7 +95,7 @@ module Grader
     
     def save_result(submission,result)
       problem = submission.problem
-      submission.graded_at = Time.now
+      submission.graded_at = Time.now.gmtime
       points = result[:points]
       submission.points = points
       comment = @config.report_comment(result[:comment])
