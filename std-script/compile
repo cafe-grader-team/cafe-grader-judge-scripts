@@ -20,9 +20,9 @@ export C_COMPILER=/usr/bin/gcc
 export CPLUSPLUS_COMPILER=/usr/bin/g++
 export PASCAL_COMPILER=/usr/bin/fpc
 
-export C_OPTIONS="-O2 -s -static -lm -Wall"
-export CPLUSPLUS_OPTIONS="-O2 -s -static -lm -Wall"
-export PASCAL_OPTIONS="-O1 -XS"
+export C_OPTIONS="-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
+export CPLUSPLUS_OPTIONS="-O2 -s -static -DCONTEST -lm -Wall"
+export PASCAL_OPTIONS="-O1 -XS -dCONTEST"
 
 # Check for the correct number of arguments. Otherwise, print usage.
 if [ $# -eq 0 -o $# -gt 4 ]
