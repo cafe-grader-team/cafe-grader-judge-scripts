@@ -21,6 +21,15 @@ module Grader
     def produce_grading_room(test_request)
       grading_room = grading_room_dir(test_request)
       FileUtils.mkdir_p(grading_room)
+
+      #
+      # Also copy additional submitted file to this directory as well.
+      # The program would see this file only if it is copied
+      #    to the sandbox directory later.  The run script should do it.
+      #
+      cmd = "cp #{test_request.input_file_name}.files/* #{grading_room}"
+      system(cmd)
+
       grading_room
     end
     
@@ -57,9 +66,10 @@ module Grader
     def grading_room_dir(test_request)
       problem_name = test_request.problem_name
       user = test_request.user
-      "#{@config.user_result_dir}" + 
+      grading_room = "#{@config.user_result_dir}" + 
         "/#{user.login}/test_request" +
         "/#{problem_name}/#{test_request.id}"
+      grading_room
     end
     
     def problem_home_dir(test_request)

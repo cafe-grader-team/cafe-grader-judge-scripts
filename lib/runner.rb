@@ -20,6 +20,7 @@ module Grader
         @engine.grade(submission)
         task.status_complete!
       end
+#      @grader_process.report_inactive if @grader_process!=nil
       return task
     end
 
@@ -45,6 +46,8 @@ module Grader
         @engine.grade(test_request)
         test_request.status_complete!
       end
+
+#      @grader_process.report_inactive if @grader_process!=nil
       return test_request
     end
 
