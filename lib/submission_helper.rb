@@ -99,14 +99,20 @@ module Grader
       points = result[:points]
       submission.points = points
       comment = @config.report_comment(result[:comment])
+
+      #
+      # TODO: FIX THIS MESSAGE
+      #
       if problem == nil
         submission.grader_comment = 'PASSED: ' + comment + '(problem is nil)'
       elsif points == problem.full_score
-        submission.grader_comment = 'PASSED: ' + comment
+        #submission.grader_comment = 'PASSED: ' + comment
+        submission.grader_comment = comment
       elsif result[:comment].chomp =~ /^[\[\]P]+$/
         submission.grader_comment = 'PASSED: ' + comment + '(inconsistent score)'
       else
-        submission.grader_comment = 'FAILED: ' + comment
+        #submission.grader_comment = 'FAILED: ' + comment
+        submission.grader_comment = comment
       end
       submission.compiler_message = result[:cmp_msg] or ''
       submission.save
