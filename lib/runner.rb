@@ -19,8 +19,10 @@ module Grader
         submission = Submission.find(task.submission_id)
         @engine.grade(submission)
         task.status_complete!
+        @grader_process.report_inactive(task) if @grader_process!=nil
+      else
+        @grader_process.report_inactive if @grader_process!=nil
       end
-#      @grader_process.report_inactive if @grader_process!=nil
       return task
     end
 
@@ -45,9 +47,10 @@ module Grader
         
         @engine.grade(test_request)
         test_request.status_complete!
+        @grader_process.report_inactive(test_request) if @grader_process!=nil
+      else
+        @grader_process.report_inactive if @grader_process!=nil
       end
-
-#      @grader_process.report_inactive if @grader_process!=nil
       return test_request
     end
 
