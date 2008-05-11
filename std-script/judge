@@ -103,6 +103,10 @@ end
 
 # Doing the testing.
 (1..(problem.num_tests)).each do |test_num|
+
+  $stdout.print "[#{test_num}]"
+  $stdout.flush
+
   log "Test number: #{test_num}"
   execute("cp #{test_result_dir}/a.out #{sandbox_dir}", "Cannot copy the compiled program into #{sandbox_dir}")
   begin
@@ -116,6 +120,8 @@ end
   execute("mv #{sandbox_dir}/output.txt #{test_result_dir}/#{test_num}", "Cannot copy the output file into #{test_result_dir}/#{test_num}")
   execute("rm -Rf #{sandbox_dir}/*", "Cannot clear #{sandbox_dir}")
 end
+
+$stdout.print "[done]\n"
 
 # Grade
 log

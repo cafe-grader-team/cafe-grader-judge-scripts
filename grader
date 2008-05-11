@@ -179,6 +179,29 @@ when "prob"
     end
   end
 
+when "sub"
+  engine = Grader::Engine.new
+  runner = Grader::Runner.new(engine, grader_proc)
+
+  grader_proc.report_active if grader_proc!=nil
+
+  ARGV.shift
+  ARGV.shift
+
+  ARGV.each do |sub_id|
+    puts "Grading #{sub_id}"
+    begin
+      submission = Submission.find(sub_id.to_i)
+    rescue ActiveRecord::RecordNotFound
+      puts "Record not found"
+      submission = nil
+    end
+
+    if submission!=nil
+      runner.grade_submission(submission)
+    end
+  end
+
 else
   display_manual
   exit(0)

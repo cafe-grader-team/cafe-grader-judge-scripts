@@ -38,6 +38,11 @@ module Grader
       end
     end
 
+    def grade_submission(submission)
+      puts "Submission: #{submission.id} by #{submission.user.full_name}"
+      @engine.grade(submission)
+    end
+
     def grade_oldest_test_request
       test_request = TestRequest.get_inqueue_and_change_status(Task::STATUS_GRADING)
       if test_request!=nil 
