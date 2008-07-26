@@ -6,6 +6,7 @@
 
 require 'erb'
 require 'fileutils'
+require File.join(File.dirname(__FILE__),'lib/import_helper')
 
 def input_filename(dir,i)
   "#{dir}/input-#{i}.txt"
@@ -15,9 +16,16 @@ def answer_filename(dir,i)
   "#{dir}/answer-#{i}.txt"
 end
 
-def copy_testcase(importing_test_dir,dir,i)
-  system("cp #{importing_test_dir}/#{i}.in #{input_filename(dir,i)}")
-  system("cp #{importing_test_dir}/#{i}.sol #{answer_filename(dir,i)}")
+def build_testrun_info_from_dir(num_testruns,importing_test_dir)
+  filenames = Dir["#{importing_test_dir}/*.in"].collect do |filename|
+    File.basename((/(.*)\.in/.match(filename))[1])
+  end
+  build_testrun_info(num_testruns,filenames)
+end
+
+def copy_testcase(importing_test_dir,fname,dir,i)
+  system("cp #{importing_test_dir}/#{fname}.in #{input_filename(dir,i)}")
+  system("cp #{importing_test_dir}/#{fname}.sol #{answer_filename(dir,i)}")
 end
 
 def process_options(options)
@@ -43,7 +51,7 @@ if (ARGV.length < 4) or (ARGV[3][0,1]=="-")
 using: import_problem name dir num check [options]
    where: name = problem_name (put '-' (dash) to use dir name)
           dir = importing testcase directory
-          num = number of testcases
+          num = number of testruns
           check = check script, which can be 
                    'integer', 'text' (for standard script), 
                    path_to_your_script, or
@@ -66,10 +74,12 @@ end
 problem = ARGV[0]
 testcase_dir = ARGV[1]
 problem = File.basename(testcase_dir) if problem=="-"
-num_testcases = ARGV[2].to_i
+num_testruns = ARGV[2].to_i
 check_script = ARGV[3]
 options = {:time_limit => 1,  :mem_limit => 16}
 process_options(options)
+
+testrun_info = build_testrun_info_from_dir(num_testruns, testcase_dir)
 
 # start working
 puts "creating directories"
@@ -81,11 +91,25 @@ system("mkdir #{problem}/test_cases")
 
 puts "copying testcases"
 
-1.upto(num_testcases) do |i|
-  system("mkdir #{problem}/test_cases/#{i}")
-  copy_testcase("#{testcase_dir}","#{problem}/test_cases/#{i}",i)
-end
+tr_num = 0
 
+num_testcases = 0
+
+testrun_info.each do |testrun|
+  tr_num += 1
+  puts "testrun: #{tr_num}"
+
+  testrun.each do |testcase_info|
+    testcase_num, testcase_fname = testcase_info
+
+    puts "copy #{testcase_fname} to #{testcase_num}"
+
+    system("mkdir #{problem}/test_cases/#{testcase_num}")
+    copy_testcase("#{testcase_dir}",testcase_fname,"#{problem}/test_cases/#{testcase_num}",testcase_num)
+
+    num_testcases += 1
+  end
+end
 
 # generating all_tests.cfg
 puts "generating testcase config file"
