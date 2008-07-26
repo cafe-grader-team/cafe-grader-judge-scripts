@@ -300,6 +300,7 @@ valid_syscall(struct user *u)
     case __NR__sysctl:
       return (filter_syscalls == 1);
     case __NR_times:
+    case __NR_time:
       return allow_times;
     case __NR_kill:
       if (u->regs.ebx == box_pid)
