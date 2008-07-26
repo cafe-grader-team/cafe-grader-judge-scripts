@@ -11,7 +11,7 @@ problem do
   run <%= tr_num %> do
     tests <%= (testrun.collect {|testcase| testcase[0]}).join(", ") %>
     <% if testrun.length==1 %>
-    score 10
+    scores 10
     <% else %>
     scores 10 <% (testrun.length-1).times do %>,0 <% end %>
     <% end %>
