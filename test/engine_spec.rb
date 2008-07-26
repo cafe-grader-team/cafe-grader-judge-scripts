@@ -24,7 +24,7 @@ describe "A grader engine, when grading submissions" do
                   :on => @problem_test_normal,
                   :and_report => {
                     :score => 135,
-                    :comment => /^PASSED/})
+                    :comment => /^(\[|P|\])+/})
   end
   
 
@@ -33,7 +33,7 @@ describe "A grader engine, when grading submissions" do
                   :on => @problem_test_normal,
                   :and_report => {
                     :score => 0,
-                    :comment => 'FAILED: compilation error',
+                    :comment => 'compilation error',
                     :compiler_message => /[Ee]rror/})
   end
 
@@ -45,7 +45,7 @@ describe "A grader engine, when grading submissions" do
                   :on => @problem_test_timeout,
                   :and_report => {
                     :score => 0,
-                    :comment => 'FAILED: TT'})
+                    :comment => 'TT'})
   end
 
   it "should produce timeout error correctly with fractional running time and fractional time limits" do
@@ -56,7 +56,7 @@ describe "A grader engine, when grading submissions" do
                   :on => @problem_test_timeout,
                   :and_report => {
                     :score => 10,
-                    :comment => 'FAILED: TP'})
+                    :comment => 'TP'})
   end
   
   it "should produce runtime error when submission uses too much static memory" do
@@ -67,7 +67,7 @@ describe "A grader engine, when grading submissions" do
                   :on => @problem_test_memory,
                   :and_report => {
                     :score => 10,
-                    :comment => /FAILED: [^P]P/})
+                    :comment => /[^P]P/})
   end
 
   it "should not allow submission to allocate too much dynamic memory" do
@@ -78,7 +78,7 @@ describe "A grader engine, when grading submissions" do
                   :on => @problem_test_memory,
                   :and_report => {
                     :score => 10,
-                    :comment => /FAILED: [^P]P/})
+                    :comment => /[^P]P/})
   end
 
   it "should score test runs correctly when submission fails in some test case" do
@@ -86,7 +86,7 @@ describe "A grader engine, when grading submissions" do
                   :on => @problem_test_normal,
                   :and_report => {
                     :score => 105,
-                    :comment => /^FAILED:/})
+                    :comment => /^.*(-|x).*$/})
   end
 
   it "should fail submission with non-zero exit status" do
@@ -94,7 +94,7 @@ describe "A grader engine, when grading submissions" do
                   :on => @problem_test_normal,
                   :and_report => {
                     :score => 0,
-                    :comment => /^FAILED:/})
+                    :comment => /^(\[|x|\])+$/})
   end
 
   it "should not allow malicious submission to see PROBLEM_HOME" do
@@ -105,7 +105,7 @@ describe "A grader engine, when grading submissions" do
                   :on => problem_test_yesno,
                   :and_report => {
                     :score => 0,
-                    :comment => /^FAILED:/})
+                    :comment => /(-|x)/})
   end
 
   it "should not allow malicious submission to open files" do
@@ -116,7 +116,7 @@ describe "A grader engine, when grading submissions" do
                   :on => problem_test_yesno,
                   :and_report => {
                     :score => 0,
-                    :comment => /^FAILED:/})
+                    :comment => /(-|x)/})
   end
 
   def grader_should(args)
