@@ -46,7 +46,7 @@ all_comment = ''
 (1..(problem.runs.length-1)).each do |k|
   log "grade run #{k}"
   run = problem.runs[k]
-  run_score = 0
+  run_score = nil
   run_comment = ''
   run_comment_short = ''
   run.tests.each do |test_num|
@@ -59,27 +59,25 @@ all_comment = ''
       result_file = File.new(result_file_name, "r")
       result_file_lines = result_file.readlines
       if result_file_lines.length>=2
-        run_score = run_score + result_file_lines[1].to_i
+        current_run_score = result_file_lines[1].to_i
         run_comment += result_file_lines[0]
         run_comment_short += char_comment(result_file_lines[0].chomp)
       else
+        current_run_score = 0
         run_comment += "result file for test #{test_num} error\n"
         run_comment_short += RUN_ERROR_MARK
         log "Error in #{test_num}/result!"
+      end
+
+      # the score of this run should be the minimum of the score for
+      #   each test case
+      if (run_score==nil) or (run_score>current_run_score)
+        run_score = current_run_score
       end
       result_file.close
     end
   end
 
-  # find total score for this run
-  run_total_score = 0
-  problem = Problem.get_instance
-  run.tests.each { |test_num| run_total_score += problem.get_score(test_num) }
-
-  if run_total_score!=run_score   # fail in some test cases, fail the run
-    run_score = 0
-  end
-  
   run_result_file = File.new("result-#{k}", "w")
   run_result_file.write run_score
   run_result_file.write "\n"

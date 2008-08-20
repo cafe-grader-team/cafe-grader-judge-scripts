@@ -27,8 +27,10 @@ module Grader
       # The program would see this file only if it is copied
       #    to the sandbox directory later.  The run script should do it.
       #
-      cmd = "cp #{test_request.input_file_name}.files/* #{grading_room}"
-      system(cmd)
+      if FileTest.exists?("#{test_request.input_file_name}.files")
+        cmd = "cp #{test_request.input_file_name}.files/* #{grading_room}"
+        system(cmd)
+      end
 
       grading_room
     end
