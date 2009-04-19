@@ -113,12 +113,14 @@ class Problem < DSLNode
     end
     (1..(@runs.length-1)).each do |j|
       run = @runs[j]
-      run.tests.each do |t|
-        if test_present[t] == false
-          test_present[t] = true
-        else
-          puts "test #{t} is present in more than one run"
-          return false
+      if run.tests!=nil
+        run.tests.each do |t|
+          if test_present[t] == false
+            test_present[t] = true
+          else
+            puts "test #{t} is present in more than one run"
+            return false
+          end
         end
       end
     end
