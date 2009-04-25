@@ -28,10 +28,7 @@ module Grader
       users = User.find(:all)
       users.each do |u|
         puts "user: #{u.login}"
-        last_sub = Submission.find(:first,
-                                   :conditions => "user_id = #{u.id} and " +
-                                                  "problem_id = #{problem.id}",
-                                   :order => 'submitted_at DESC')
+        last_sub = Submission.find_last_by_user_and_problem(u.id,problem.id)
         if last_sub!=nil
           @engine.grade(last_sub)
         end
