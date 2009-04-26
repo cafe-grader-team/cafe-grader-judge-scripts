@@ -128,6 +128,14 @@ end
 #set loggin environment
 ENV['GRADER_LOGGING'] = log_file_name
 
+# register exit handler to report inactive, and terminated
+at_exit do
+  if grader_proc!=nil
+    grader_proc.report_inactive 
+    grader_proc.terminate
+  end
+end
+
 #
 # MAIN LOOP
 #
@@ -207,6 +215,3 @@ else
   exit(0)
 end
 
-# report inactive
-grader_proc.report_inactive if grader_proc!=nil
-                             
