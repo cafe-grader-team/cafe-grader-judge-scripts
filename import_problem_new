@@ -1,0 +1,223 @@
+#!/usr/bin/ruby
+
+require 'erb'
+require 'fileutils'
+require File.join(File.dirname(__FILE__),'lib/import_helper')
+
+JUDGE_ENVIRONMENTS = [:grading, :exam]
+ENV_INFO = {
+  :grading => { 
+    :ev_dir => 'ev',
+    :raw_prefix => '',
+  },
+  :exam => {
+    :ev_dir => 'ev-exam',
+    :raw_prefix => 'ex.',
+  }
+}
+
+def input_filename(dir,i)
+  "#{dir}/input-#{i}.txt"
+end
+
+def answer_filename(dir,i)
+  "#{dir}/answer-#{i}.txt"
+end
+
+def build_testrun_info_from_dir(num_testruns, importing_test_dir, raw_prefix='')
+  filenames = Dir["#{importing_test_dir}/#{raw_prefix}*.in"].collect do |filename|
+    File.basename((/(.*)\.in/.match(filename))[1])
+  end
+  build_testrun_info(num_testruns,filenames,raw_prefix)
+end
+
+def copy_testcase(importing_test_dir,fname,dir,i)
+  system("cp #{importing_test_dir}/#{fname}.in #{input_filename(dir,i)}")
+  system("cp #{importing_test_dir}/#{fname}.sol #{answer_filename(dir,i)}")
+end
+
+def process_options(options)
+  i = 4
+  while i<ARGV.length
+    if ARGV[i]=='-t'
+      options[:time_limit] = ARGV[i+1].to_f if ARGV.length>i+1
+      i += 1
+    end
+    if ARGV[i]=='-m'
+      options[:mem_limit] = ARGV[i+1].to_i if ARGV.length>i+1
+      i += 1
+    end
+    i += 1
+  end
+end
+
+def print_usage
+  puts "using: import_problem_new name dir check [options]
+
+where: name = problem_name (put '-' (dash) to use dir name)
+       dir = importing testcase directory
+       check = check script, which can be 
+               'integer', 'text' (for standard script), 
+               path_to_your_script, or
+               'wrapper:(path_to_your_wrapped_script)'
+options: -t time-limit (in seconds)
+         -m memory-limit (in megabytes)
+
+The script looks at test data files in the dir of the forms: *.in and
+*.sol and import them to the evaluation dir for their environment,
+based on their prefixes.
+
+Currently supporting environments are:"
+
+  JUDGE_ENVIRONMENTS.each do |env|
+    prefix = ENV_INFO[env][:raw_prefix]
+    prefix = 'no prefix' if prefix==''
+    puts "  * #{env}"
+    puts "      import to: #{ENV_INFO[env][:ev_dir]}"
+    puts "      prefix with: #{prefix}  (e.g., #{ENV_INFO[env][:raw_prefix]}1.in, #{ENV_INFO[env][:raw_prefix]}5a.sol)"
+  end
+  
+  puts"
+For each environment, the script
+  * creates a directory for a problem in ev dir of that environment,
+  * copies testdata in the old format and create standard testcase config file
+  * copies a check script for grading
+  * creates a test_request template in the ev dir + '/test_request'
+
+For wrapped checked script see comment in templates/check_wrapper for
+  information."
+end
+
+def count_testruns(testcase_dir, raw_prefix)
+  n = 0
+  begin
+    # check for test case n+1
+    if ((Dir["#{testcase_dir}/#{raw_prefix}#{n+1}.in"].length==0) and
+        (Dir["#{testcase_dir}/#{raw_prefix}#{n+1}[a-z].in"].length==0))
+      return n
+    end
+    n += 1
+  end while true
+end
+
+def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, check_script, options)
+  testrun_info = build_testrun_info_from_dir(num_testruns, testcase_dir, raw_prefix)
+
+  problem_dir = "#{ev_dir}/#{problem}"
+
+  # start working
+  puts "creating directories"
+
+  system("mkdir #{problem_dir}")
+  system("mkdir #{problem_dir}/script")
+  system("mkdir #{problem_dir}/test_cases")
+
+  puts "copying testcases"
+
+  tr_num = 0
+
+  num_testcases = 0
+
+  testrun_info.each do |testrun|
+    tr_num += 1
+    puts "testrun: #{tr_num}"
+    
+    testrun.each do |testcase_info|
+      testcase_num, testcase_fname = testcase_info
+      
+      puts "copy #{testcase_fname} to #{testcase_num}"
+      
+      system("mkdir #{problem_dir}/test_cases/#{testcase_num}")
+      copy_testcase("#{testcase_dir}",testcase_fname,"#{problem_dir}/test_cases/#{testcase_num}",testcase_num)
+      
+      num_testcases += 1
+    end
+  end
+  
+  # generating all_tests.cfg
+  puts "generating testcase config file"
+  
+  template = File.open(SCRIPT_DIR + "/templates/all_tests.cfg.erb").read
+  all_test_cfg = ERB.new(template)
+  
+  cfg_file = File.open("#{problem_dir}/test_cases/all_tests.cfg","w")
+  cfg_file.puts all_test_cfg.result binding
+  cfg_file.close
+  
+  # copy check script
+  if res = /^wrapper:(.*)$/.match(check_script)
+    # wrapper script
+    check_script_fname = res[1]
+    script_name = File.basename(check_script_fname)
+    check_wrapper_template = File.open(SCRIPT_DIR + "/templates/check_wrapper").read
+    check_wrapper = ERB.new(check_wrapper_template)
+    
+    check_file = File.open("#{problem_dir}/script/check","w")
+    check_file.puts check_wrapper.result
+    check_file.close
+    
+    File.chmod(0755,"#{problem_dir}/script/check")
+    
+    system("cp #{check_script_fname} #{problem_dir}/script/#{script_name}")
+  else
+    if File.exists?(SCRIPT_DIR + "/templates/check.#{check_script}")
+      check_script_fname = SCRIPT_DIR + "/templates/check.#{check_script}"
+    else
+      check_script_fname = check_script
+    end
+    system("cp #{check_script_fname} #{problem_dir}/script/check")
+  end
+  
+  # generating test_request directory
+  puts "generating test_request template"
+  FileUtils.mkdir_p("#{ev_dir}/test_request/#{problem}/script")
+  FileUtils.mkdir_p("#{ev_dir}/test_request/#{problem}/test_cases/1")
+  
+  template = File.open(SCRIPT_DIR + "/templates/test_request_all_tests.cfg.erb").read
+  test_request_all_test_cfg = ERB.new(template)
+  
+  cfg_file = File.open("#{ev_dir}/test_request/#{problem}/test_cases/all_tests.cfg","w")
+  cfg_file.puts test_request_all_test_cfg.result
+  cfg_file.close
+  
+  system("cp #{SCRIPT_DIR}/templates/check_empty #{ev_dir}/test_request/#{problem}/script/check")
+  system("cp #{SCRIPT_DIR}/templates/answer-1.txt #{ev_dir}/test_request/#{problem}/test_cases/1")
+  
+  puts "done"
+end
+
+
+SCRIPT_DIR = File.dirname(__FILE__)
+
+# print usage
+if (ARGV.length < 3) or (ARGV[2][0,1]=="-")
+  print_usage
+  exit(127)
+end
+
+# processing arguments
+problem = ARGV[0]
+testcase_dir = ARGV[1]
+problem = File.basename(testcase_dir) if problem=="-"
+check_script = ARGV[2]
+options = {:time_limit => 1,  :mem_limit => 16}
+process_options(options)
+
+JUDGE_ENVIRONMENTS.each do |env|
+  ev_dir = ENV_INFO[env][:ev_dir]
+  raw_prefix = ENV_INFO[env][:raw_prefix]
+
+  num_testruns = count_testruns(testcase_dir,raw_prefix)
+
+  puts ""
+  puts "*** Environment: #{env} (#{num_testruns} test runs) ***"
+  puts ""
+
+  import_problem(ev_dir, 
+                 problem, 
+                 testcase_dir, 
+                 num_testruns, 
+                 raw_prefix,
+                 check_script, 
+                 options)
+end
