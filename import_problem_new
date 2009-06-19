@@ -37,7 +37,7 @@ def copy_testcase(importing_test_dir,fname,dir,i)
 end
 
 def process_options(options)
-  i = 4
+  i = 3
   while i<ARGV.length
     if ARGV[i]=='-t'
       options[:time_limit] = ARGV[i+1].to_f if ARGV.length>i+1
