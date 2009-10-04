@@ -3,7 +3,7 @@
 #
 Grader::Initializer.run do |config|
 
-  config.problems_dir = GRADER_ROOT + "/../ev"
+  config.problems_dir = GRADER_ROOT + "/../ev-exam"
   config.user_result_dir = GRADER_ROOT + "/../result"
   
   config.talkative = true
