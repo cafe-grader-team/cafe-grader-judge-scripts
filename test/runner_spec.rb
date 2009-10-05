@@ -28,7 +28,7 @@ describe "A grader runner, when grade task" do
 
     submission.should_receive(:graded_at=)
     submission.should_receive(:points=).with(135)
-    submission.should_receive(:grader_comment=).with(/^PASSED/)
+    submission.should_receive(:grader_comment=).with("[PP][PPPPP][PPP]")
     submission.should_receive(:compiler_message=).with('')
     submission.should_receive(:save)
 
