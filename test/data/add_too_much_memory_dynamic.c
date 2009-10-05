@@ -4,9 +4,10 @@
 int main()
 {
   int a,b;
+  int r;
   char *huge_array;
 
-  scanf("%d %d",&a,&b);
+  r = scanf("%d %d",&a,&b);
 
   huge_array = (char *)malloc(5000000);
   if(huge_array==NULL)

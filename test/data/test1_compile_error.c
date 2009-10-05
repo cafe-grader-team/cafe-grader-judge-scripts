@@ -5,8 +5,9 @@ LANG: C
 
 int main()
 {
+  int r;
   int a,
-  scanf("%d %d",&a,&b);
+  r = scanf("%d %d",&a,&b);
   printf("%d\n",a+b);
   return 0;
 }

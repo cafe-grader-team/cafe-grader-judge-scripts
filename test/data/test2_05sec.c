@@ -12,8 +12,9 @@ int main()
   int a,b;
 
   int c=0;
+  int r;
 
-  scanf("%d %d",&a,&b);
+  r = scanf("%d %d",&a,&b);
   printf("%d\n",a+b);
 
   struct rusage ru;

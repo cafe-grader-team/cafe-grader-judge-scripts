@@ -3,7 +3,8 @@
 int main()
 {
   int a,b;
-  scanf("%d %d",&a,&b);
+  int r;
+  r = scanf("%d %d",&a,&b);
   if((a==1) && (b==1))
     printf("100\n");
   else

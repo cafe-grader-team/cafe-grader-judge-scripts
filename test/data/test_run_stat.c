@@ -9,8 +9,9 @@ int main()
   int a,b,d;
   int i,j;
   char *c = malloc(100000);
+  int r;
   
-  scanf("%d %d",&a,&b);
+  r = scanf("%d %d",&a,&b);
   d = a+b;
   //  printf("%d\n",a+b);
   for(j=0; j<1; j++)
