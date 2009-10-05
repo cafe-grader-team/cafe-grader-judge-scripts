@@ -1,0 +1,100 @@
+#!/usr/bin/env ruby
+
+ENVIRONMENT_DIRS = ['ev', 'ev-exam']
+
+def config
+  Grader::Configuration.get_instance
+end
+
+def rename_problem(old_problem_name, new_problem_name)
+
+  if valid_problem_name(new_problem_name)
+    puts "Bad new problem name: #{new_problem_name}"
+    return
+  end
+
+  problem = Problem.find_by_name(old_problem_name)
+  if problem==nil
+    puts "Problem #{old_problem_name} does not exist."
+    return
+  end
+
+  puts "Problem: #{old_problem_name} -> #{new_problem_name}"
+
+  ENVIRONMENT_DIRS.each do |dir|
+    problem_dir = File.join(GRADER_ROOT,'..',dir,old_problem_name)
+    new_problem_dir = File.join(GRADER_ROOT,'..',dir,new_problem_name)
+
+    if FileTest.exists? problem_dir
+      puts "Moving #{problem_dir} to #{new_problem_dir}."
+      File.rename(problem_dir, new_problem_dir)
+
+      tr_problem_dir = File.join(GRADER_ROOT,'..',dir,
+                                 'test_request',old_problem_name)
+      new_tr_problem_dir = File.join(GRADER_ROOT,'..',dir,
+                                     'test_request',new_problem_name)
+      File.rename(tr_problem_dir, new_tr_problem_dir)
+    end
+  end
+
+  problem.name = new_problem_name
+  problem.save
+end
+
+def usage
+  puts <<USAGE
+Usage: 
+  rename_problem [old_name] [new_name]
+or
+  rename_problem -f [filename]
+
+When using with -f, that file should contain, for each line, the old
+problem name and its new name.
+
+This script should be called at the judge root dir where dirs 'ev' and
+'ev-exam' are.
+USAGE
+end
+
+def valid_problem_name(name)
+  if name.length==0:
+      return false
+  else
+    return !(/^[a-zA-Z0-9_\-]+$/ === name)
+  end
+end
+
+if (ARGV.length!=2)
+  usage
+  exit(0)
+end
+
+if ARGV[0]=='-f' and !FileTest.exists?(ARGV[1])
+  puts "File #{ARGV[1]} does not exist."
+  usage
+  exit(0)
+end
+
+# load grader environment
+GRADER_ENV = 'grading'
+require File.join(File.dirname(__FILE__),'config/environment')
+
+# boot rails, to be able to rename the problem
+RAILS_ENV = config.rails_env
+require RAILS_ROOT + '/config/environment'
+
+if ARGV[0]!='-f'
+  old_problem_name = ARGV[0]
+  new_problem_name = ARGV[1]
+
+  rename_problem(old_problem_name, new_problem_name)
+else
+  lines = IO.readlines(ARGV[1])
+  lines.each do |line|
+    items = line.split
+    if items.length==2
+      old_name, new_name = items
+      rename_problem(old_name, new_name)
+    end
+  end
+end

@@ -1,6 +1,6 @@
 require 'fileutils'
 require 'ftools'
-require 'lib/dir_init'
+require File.join(File.dirname(__FILE__),'dir_init')
 
 module Grader
 
