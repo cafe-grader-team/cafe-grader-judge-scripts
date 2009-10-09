@@ -158,7 +158,7 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
     check_wrapper = ERB.new(check_wrapper_template)
     
     check_file = File.open("#{problem_dir}/script/check","w")
-    check_file.puts check_wrapper.result
+    check_file.puts check_wrapper.result binding
     check_file.close
     
     File.chmod(0755,"#{problem_dir}/script/check")
