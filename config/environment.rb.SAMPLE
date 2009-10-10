@@ -1,7 +1,8 @@
-# Rails app directory
-RAILS_ROOT = "/home/jittat/web_grader"
+# Rails app directory (where you store web interface dir)
+RAILS_ROOT = "RAILS-ROOT"
 
-GRADER_ROOT = "/home/jittat/grader/scripts"
+# This is where scripts dir is.
+GRADER_ROOT = "GRADER-DIR/scripts"
 
 # This load all required codes
 require File.join(File.dirname(__FILE__),'../lib/boot')
