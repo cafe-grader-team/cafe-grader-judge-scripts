@@ -65,6 +65,10 @@ module Grader
         # puts "GRADING DIR: #{grading_dir}"
         # puts "PROBLEM DIR: #{problem_home}"
 
+        if !FileTest.exist?(problem_home)
+          raise "No test data."
+        end
+
         dinit = DirInit::Manager.new(problem_home)
 
         dinit.setup do
@@ -83,7 +87,7 @@ module Grader
         end
 
       rescue RuntimeError => msg
-        @reporter.report_error(submission,"Grading error: #{msg}")
+        @reporter.report_error(submission, msg)
 
       ensure
         @room_maker.clean_up(submission)
