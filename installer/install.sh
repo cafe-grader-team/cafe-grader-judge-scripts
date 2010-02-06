@@ -97,14 +97,14 @@ mkdir log
 
 echo "Configuring grader"
 
-cp scripts/config/environment.rb.SAMPLE scripts/config/environment.rb
 cp scripts/config/env_exam.rb.SAMPLE scripts/config/env_exam.rb
 cp scripts/config/env_grading.rb.SAMPLE scripts/config/env_grading.rb
 
-echo "Object.instance_eval{ remove_const :RAILS_ROOT }" >> scripts/config/environment.rb
-echo "RAILS_ROOT = '$CAFE_PATH/web'" >> scripts/config/environment.rb
-echo "Object.instance_eval{ remove_const :GRADER_ROOT }" >> scripts/config/environment.rb
-echo "GRADER_ROOT = '$CAFE_PATH/judge/scripts" >> scripts/config/environment.rb
+# create new environment.rb file
+echo "RAILS_ROOT = '$CAFE_PATH/web'" > scripts/config/environment.rb
+echo "GRADER_ROOT = '$CAFE_PATH/judge/scripts'" >> scripts/config/environment.rb
+echo "require File.join(File.dirname(__FILE__),'../lib/boot')" >> scripts/config/environment.rb
+echo "require File.dirname(__FILE__) + \"/env_#{GRADER_ENV}.rb\"" >> scripts/config/environment.rb
 
 cd ..
 
