@@ -79,6 +79,7 @@ sudo rmdir log
 echo "Running rake tasks to initialize database"
 
 rake db:migrate
+rake db:seed
 
 echo "Intalling web interface complete..."
 echo
