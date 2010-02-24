@@ -35,6 +35,21 @@ then
   echo "Please open another terminal and create the user and database for Cafe grader."
   echo "Don't forget to grant access to that database for the user."
   echo "Please have username, password, and database name ready before continue."
+  echo 
+  echo "The following are instructions:"
+  echo "1. Run mysql:"
+  echo
+  echo "      mysql -u root -p"
+  echo
+  echo "   if you have just installed mysql, the root password is the one that you have just entered"
+  echo "2. Create a new database, a new user, and grant access to grader database:"
+  echo
+  echo "      create user 'USERNAME'@'localhost' identified by 'PASSWORD';"
+  echo "      create database DATABASENEME;"
+  echo "      grant all on DATABASENAME.* to 'USERNAME'@'localhost';"
+  echo
+  echo "   Replace USERNAME, PASSWORD, and DATABASENAME accordingly."
+  echo 
   echo "Hit enter when ready..."
   read dummy
 fi
