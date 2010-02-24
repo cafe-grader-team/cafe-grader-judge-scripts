@@ -4,6 +4,7 @@ echo "This script will install and configure Cafe grader."
 
 echo "Installing required apt"
 
+sudo apt-get update
 sudo apt-get install mysql-server mysql-client ruby1.8 ruby1.8-dev rdoc1.8 \
   g++ gcc libmysql-ruby1.8 irb apache2 libmysqlclient15-dev build-essential \
   git-core rubygems rake openssl libopenssl-ruby
@@ -11,6 +12,7 @@ sudo apt-get install mysql-server mysql-client ruby1.8 ruby1.8-dev rdoc1.8 \
 echo "Installing rails"
 
 sudo gem install rails --no-ri --no-rdoc
+sudo gem install rack -v=1.0.1 --no-ri --no-rdoc
 
 echo "Fetching Cafe Grader from Git repositories"
 
@@ -31,7 +33,7 @@ read ch
 if [ "$ch" = "n" -o "$ch" = "N" ]
 then
   echo "Please open another terminal and create the user and database for Cafe grader."
-  echo "Don't forget to grant access to that database fro the user."
+  echo "Don't forget to grant access to that database for the user."
   echo "Please have username, password, and database name ready before continue."
   echo "Hit enter when ready..."
   read dummy
