@@ -133,9 +133,10 @@ sudo gem install mongrel --no-ri --no-rdoc
 echo "Now you are ready to run cafe grader...."
 echo 
 echo "Try:"
+echo
 echo "  cd web"
 echo "  ./script/server"
 echo
 echo "and access web at http://localhost:3000/"
-
+echo "The root username is 'root', its password is 'ioionrails'."
 
