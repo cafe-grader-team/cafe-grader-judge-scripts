@@ -32,8 +32,9 @@ module Grader
   end
   
   class SubmissionReporter
-    def initialize
+    def initialize(dry_run=false)
       @config = Grader::Configuration.get_instance
+      @dry_run = dry_run
     end
     
     def report(sub,test_result_dir)
@@ -115,7 +116,10 @@ module Grader
         submission.grader_comment = comment
       end
       submission.compiler_message = result[:cmp_msg] or ''
-      submission.save
+
+      if not @dry_run
+        submission.save
+      end
     end
     
   end

@@ -60,45 +60,73 @@ end
 # main program
 #########################################
 
-# with --help
-if (ARGV.length==1) and (/help/.match(ARGV[0]))
-  display_manual
-  exit(0)
-end
+# Reading environment and options.
 
-# reading environment and options
-if (ARGV.length >= 1) and (ARGV[0]=='stop')
-  if ARGV.length==1
-    puts "you should specify pid-list or 'all'"
+def process_options_and_stop_file
+  # The list of options are:
+  #   - stop [all|process ids]
+  #   -  
+  
+  # Process 'help' option
+  if (ARGV.length==1) and (/help/.match(ARGV[0]))
     display_manual
-  elsif (ARGV.length==2) and (ARGV[1]=='all')
-    stop_grader(:all)
-    puts "A global stop file ('stop.all') created."
-    puts "You should remove it manually later."
-  else
-    (1..ARGV.length-1).each do |i|
-      stop_grader(ARGV[i])
+    exit(0)
+  end
+
+  # Process 'stop' option.
+  if (ARGV.length >= 1) and (ARGV[0]=='stop')
+    if ARGV.length==1
+      puts "you should specify pid-list or 'all'"
+      display_manual
+    elsif (ARGV.length==2) and (ARGV[1]=='all')
+      stop_grader(:all)
+      puts "A global stop file ('stop.all') created."
+      puts "You should remove it manually later."
+    else
+      (1..ARGV.length-1).each do |i|
+        stop_grader(ARGV[i])
+      end
+      puts "stop file(s) created"
     end
-    puts "stop file(s) created"
+    exit(0)
   end
-  exit(0)
+
+  # Check stop file.
+  if check_stopfile
+    puts "Stop file exists.  Terminated."
+    clear_stopfile
+    exit(0)
+  end
+
+  #default options
+  options = {
+    :mode => 'queue',
+    :environment => 'exam',
+    :dry_run => false,
+  }
+
+  # Process mode and environment option
+  if ARGV.length >= 1
+    options[:environment] = ARGV.shift
+    if ARGV.length >=1
+      options[:mode] = ARGV.shift
+    end
+  end
+
+  options[:dry_run] = (ARGV.delete('--dry') != nil)
+  if options[:dry_run] and (not options[:mode] == 'prob')
+    puts "Dry run currently works for 'prob' mode."
+    exit(0)
+  end
+
+  return options
 end
 
-if check_stopfile
-  puts "Stop file exists.  Terminated."
-  clear_stopfile
-  exit(0)
-end
-
-grader_mode = 'queue'
-if ARGV.length >= 1
-  GRADER_ENV = ARGV[0]
-  if ARGV.length >=2
-    grader_mode = ARGV[1]
-  end
-else
-  GRADER_ENV = 'exam'
-end
+# ======= Main ========
+options = process_options_and_stop_file
+GRADER_ENV = options[:environment]
+grader_mode = options[:mode]
+dry_run = options[:dry_run]
 
 puts "environment: #{GRADER_ENV}"
 require File.join(File.dirname(__FILE__),'config/environment')
@@ -170,13 +198,10 @@ when "queue", "test_request"
   end
   
 when "prob"
-  engine = Grader::Engine.new
+  engine = Grader::Engine.new(nil, Grader::SubmissionReporter.new(dry_run))
   runner = Grader::Runner.new(engine, grader_proc)
 
   grader_proc.report_active if grader_proc!=nil
-
-  ARGV.shift
-  ARGV.shift
 
   ARGV.each do |prob_name|
     prob = Problem.find_by_name(prob_name)
@@ -192,9 +217,6 @@ when "sub"
   runner = Grader::Runner.new(engine, grader_proc)
 
   grader_proc.report_active if grader_proc!=nil
-
-  ARGV.shift
-  ARGV.shift
 
   ARGV.each do |sub_id|
     puts "Grading #{sub_id}"
