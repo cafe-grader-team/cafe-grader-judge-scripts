@@ -108,14 +108,14 @@ def process_options_and_stop_file
   end
 
   options[:dry_run] = (ARGV.delete('--dry') != nil)
-  if options[:dry_run] and (not options[:mode] == 'prob')
-    puts "Dry run currently works only for 'prob' mode."
+  if options[:dry_run] and (not ['prob','contest'].include? options[:mode])
+    puts "Dry run currently works only for 'prob' or 'contest' modes."
     exit(0)
   end
 
   options[:report] = (ARGV.delete('--report') != nil)
   if options[:report] and (not ['prob','contest'].include? options[:mode])
-    puts "Report currently works only for 'prob' mode."
+    puts "Report currently works only for 'prob' or 'contest' modes."
     exit(0)
   end
 
@@ -144,14 +144,14 @@ class ResultCollector
     puts "       REPORT"
     puts "---------------------"
 
-    print "login"
+    print "login,email"
     @problems.each_value do |problem|
       print ",#{problem.name}"
     end
     print "\n"
 
     @users.each_value do |user|
-      print "#{user.login}"
+      print "#{user.login},#{user.email}"
       @problems.each_value do |problem|
         if @results.has_key? [user.id, problem.id]
           print ",#{@results[[user.id,problem.id]][:points]}"
@@ -305,7 +305,10 @@ when "contest"
   contest.problems.each do |problem|
     puts "Grading: #{problem.name}"
     runner.grade_problem(problem, 
-                         :user_conditions => lambda {|u| u.contest_finished?})
+                         :user_conditions => lambda do |u| 
+                           u.contest_finished? and 
+                             u.contest_ids.include?(contest.id)
+                         end)
   end
 
   if options[:report]
