@@ -14,11 +14,19 @@ module Grader
     attr_writer :room_maker
     attr_writer :reporter
 
-    def initialize(room_maker=nil, reporter=nil)
+    def initialize(options={})
+      # default options
+      if not options.include? :room_maker
+        options[:room_maker] = Grader::SubmissionRoomMaker.new
+      end
+      if not options.include? :reporter
+        options[:reporter] =  Grader::SubmissionReporter.new
+      end
+
       @config = Grader::Configuration.get_instance
 
-      @room_maker = room_maker || Grader::SubmissionRoomMaker.new 
-      @reporter = reporter || Grader::SubmissionReporter.new
+      @room_maker = options[:room_maker]
+      @reporter = options[:reporter]
     end
     
     # takes a submission, asks room_maker to produce grading directories,

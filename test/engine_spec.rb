@@ -156,8 +156,8 @@ describe "A grader engine, when grading test requests" do
 
   before(:each) do
     @config = Grader::Configuration.get_instance
-    @engine = Grader::Engine.new(Grader::TestRequestRoomMaker.new,
-                                 Grader::TestRequestReporter.new)
+    @engine = Grader::Engine.new(:room_maker => Grader::TestRequestRoomMaker.new,
+                                 :reporter => Grader::TestRequestReporter.new)
     init_sandbox
   end
 

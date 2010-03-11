@@ -32,13 +32,21 @@ module Grader
   end
   
   class SubmissionReporter
-    def initialize(dry_run=false)
+    def initialize(options={})
+      options = {:dry_run => false, :result_collector => nil}.merge(options)
       @config = Grader::Configuration.get_instance
-      @dry_run = dry_run
+      @dry_run = options[:dry_run]
+      @result_collector = options[:result_collector]
     end
     
     def report(sub,test_result_dir)
-      save_result(sub,read_result(test_result_dir))
+      result = read_result(test_result_dir)
+      if @result_collector
+        @result_collector.save(sub.user, 
+                               sub.problem,
+                               result)
+      end
+      save_result(sub,result)
     end
     
     def report_error(sub,msg)

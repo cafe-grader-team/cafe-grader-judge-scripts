@@ -56,12 +56,6 @@ using: (1) grader
 USAGE
 end
 
-#########################################
-# main program
-#########################################
-
-# Reading environment and options.
-
 def process_options_and_stop_file
   # The list of options are:
   #   - stop [all|process ids]
@@ -115,14 +109,65 @@ def process_options_and_stop_file
 
   options[:dry_run] = (ARGV.delete('--dry') != nil)
   if options[:dry_run] and (not options[:mode] == 'prob')
-    puts "Dry run currently works for 'prob' mode."
+    puts "Dry run currently works only for 'prob' mode."
+    exit(0)
+  end
+
+  options[:report] = (ARGV.delete('--report') != nil)
+  if options[:report] and (not options[:mode] == 'prob')
+    puts "Report currently works only for 'prob' mode."
     exit(0)
   end
 
   return options
 end
 
-# ======= Main ========
+class ResultCollector
+  def initialize
+    @results = {}
+    @problems = {}
+    @users = {}
+  end
+
+  def save(user, problem, grading_result)
+    if not @problems.has_key? problem.id
+      @problems[problem.id] = problem
+    end
+    if not @users.has_key? user.id
+      @users[user.id] = user
+    end
+    @results[[user.id, problem.id]] = grading_result
+  end
+
+  def print_report_by_user
+    puts "---------------------"
+    puts "       REPORT"
+    puts "---------------------"
+
+    print "login"
+    @problems.each_value do |problem|
+      print ",#{problem.name}"
+    end
+    print "\n"
+
+    @users.each_value do |user|
+      print "#{user.login}"
+      @problems.each_value do |problem|
+        if @results.has_key? [user.id, problem.id]
+          print ",#{@results[[user.id,problem.id]][:points]}"
+        else
+          print ","
+        end
+      end
+      print "\n"
+    end
+  end
+end
+
+#########################################
+# main program
+#########################################
+
 options = process_options_and_stop_file
 GRADER_ENV = options[:environment]
 grader_mode = options[:mode]
@@ -174,8 +219,8 @@ when "queue", "test_request"
   if grader_mode=="queue"
     engine = Grader::Engine.new
   else
-    engine = Grader::Engine.new(Grader::TestRequestRoomMaker.new,
-                                Grader::TestRequestReporter.new)
+    engine = Grader::Engine.new(:room_maker => Grader::TestRequestRoomMaker.new,
+                                :reporter => Grader::TestRequestReporter.new)
   end
 
   runner = Grader::Runner.new(engine, grader_proc)
@@ -198,11 +243,20 @@ when "queue", "test_request"
   end
   
 when "prob"
-  engine = Grader::Engine.new(nil, Grader::SubmissionReporter.new(dry_run))
+  if options[:report]
+    result_collector = ResultCollector.new
+  else
+    result_collector = nil
+  end
+  
+  engine = (Grader::Engine.
+            new(:reporter => 
+                Grader::SubmissionReporter.new(:dry_run => dry_run,
+                                               :result_collector => result_collector)))
   runner = Grader::Runner.new(engine, grader_proc)
-
+  
   grader_proc.report_active if grader_proc!=nil
-
+  
   ARGV.each do |prob_name|
     prob = Problem.find_by_name(prob_name)
     if prob==nil
@@ -210,6 +264,10 @@ when "prob"
     else
       runner.grade_problem(prob)
     end
+  end
+
+  if options[:report]
+    result_collector.print_report_by_user
   end
 
 when "sub"
