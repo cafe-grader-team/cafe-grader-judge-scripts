@@ -24,10 +24,14 @@ module Grader
       return task
     end
 
-    def grade_problem(problem)
+    def grade_problem(problem, options={})
       users = User.find(:all)
       users.each do |u|
         puts "user: #{u.login}"
+        if options[:user_conditions]!=nil
+          con_proc = options[:user_conditions]
+          next if not con_proc.call(u)
+        end
         last_sub = Submission.find_last_by_user_and_problem(u.id,problem.id)
         if last_sub!=nil
           @engine.grade(last_sub)

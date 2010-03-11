@@ -114,7 +114,7 @@ def process_options_and_stop_file
   end
 
   options[:report] = (ARGV.delete('--report') != nil)
-  if options[:report] and (not options[:mode] == 'prob')
+  if options[:report] and (not ['prob','contest'].include? options[:mode])
     puts "Report currently works only for 'prob' mode."
     exit(0)
   end
@@ -248,11 +248,14 @@ when "prob"
   else
     result_collector = nil
   end
-  
-  engine = (Grader::Engine.
-            new(:reporter => 
-                Grader::SubmissionReporter.new(:dry_run => dry_run,
-                                               :result_collector => result_collector)))
+
+  if options[:dry_run]
+    puts "Running in dry mode"
+  end
+
+  prob_reporter = Grader::SubmissionReporter.new(:dry_run => dry_run,
+                                                 :result_collector => result_collector)
+  engine = Grader::Engine.new(:reporter => prob_reporter)
   runner = Grader::Runner.new(engine, grader_proc)
   
   grader_proc.report_active if grader_proc!=nil
@@ -269,6 +272,45 @@ when "prob"
   if options[:report]
     result_collector.print_report_by_user
   end
+
+when "contest"
+  # always use dry run when grading during contest
+  contest_name = ARGV.shift
+
+  options[:dry_run] = true
+
+  contest = Contest.find_by_name(contest_name)
+  if contest==nil
+    puts "cannot find contest: #{contest_name}"
+    exit(0)
+  end
+  
+  if options[:report]
+    result_collector = ResultCollector.new
+  else
+    result_collector = nil
+  end
+
+  if options[:dry_run]
+    puts "Running in dry mode"
+  end
+
+  prob_reporter = Grader::SubmissionReporter.new(:dry_run => dry_run,
+                                                 :result_collector => result_collector)
+  engine = Grader::Engine.new(:reporter => prob_reporter)
+  runner = Grader::Runner.new(engine, grader_proc)
+  
+  grader_proc.report_active if grader_proc!=nil
+  
+  contest.problems.each do |problem|
+    puts "Grading: #{problem.name}"
+    runner.grade_problem(problem, 
+                         :user_conditions => lambda {|u| u.contest_finished?})
+  end
+
+  if options[:report]
+    result_collector.print_report_by_user
+  end  
 
 when "sub"
   engine = Grader::Engine.new
@@ -289,6 +331,8 @@ when "sub"
       runner.grade_submission(submission)
     end
   end
+
+
 
 else
   display_manual
