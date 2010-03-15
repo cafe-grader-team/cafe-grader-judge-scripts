@@ -57,6 +57,7 @@ module DirInit
       ensure
         # make sure it unlock the directory
         dir.flock(File::LOCK_UN)
+        dir.close
       end
     end
     
@@ -94,6 +95,7 @@ module DirInit
       ensure
         # make sure it unlock the directory
         dir.flock(File::LOCK_UN)
+        dir.close
       end
     end
     
