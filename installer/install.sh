@@ -45,8 +45,8 @@ then
   echo "2. Create a new database, a new user, and grant access to grader database:"
   echo
   echo "      create user 'USERNAME'@'localhost' identified by 'PASSWORD';"
-  echo "      create database DATABASENEME;"
-  echo "      grant all on DATABASENAME.* to 'USERNAME'@'localhost';"
+  echo "      create database \`DATABASENEME\`;"
+  echo "      grant all on \`DATABASENAME\`.* to 'USERNAME'@'localhost';"
   echo
   echo "   Replace USERNAME, PASSWORD, and DATABASENAME accordingly."
   echo 
