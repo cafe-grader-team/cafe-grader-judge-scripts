@@ -1,5 +1,4 @@
 require 'fileutils'
-require 'ftools'
 require File.join(File.dirname(__FILE__),'dir_init')
 
 module Grader
@@ -139,7 +138,7 @@ module Grader
         fname = File.basename(s)
         if !FileTest.exist?("#{script_dir}/#{fname}")
           copied << fname
-          system("cp #{s} #{script_dir}")
+          FileUtils.cp(s, "#{script_dir}")
         end
       end
       
@@ -174,7 +173,7 @@ module Grader
 
     def clear_script(log,problem_home)
       log.each do |s|
-        system("rm #{problem_home}/script/#{s}")
+        FileUtils.rm("#{problem_home}/script/#{s}")
       end
     end
 

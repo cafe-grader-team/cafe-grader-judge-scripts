@@ -1,17 +1,18 @@
+require 'fileutils'
+
 module GraderEngineHelperMethods
 
   def clear_sandbox
     config = Grader::Configuration.get_instance
-    clear_cmd = "rm -rf #{config.test_sandbox_dir}/*"
-    system(clear_cmd)
+    FileUtils.rm_rf(Dir.glob("#{config.test_sandbox_dir}/*"), 
+                    :secure => true)
   end
 
   def init_sandbox
     config = Grader::Configuration.get_instance
     clear_sandbox
     FileUtils.mkdir_p config.user_result_dir
-    cp_cmd = "cp -R #{config.test_data_dir}/ev #{config.test_sandbox_dir}"
-    system(cp_cmd)
+    FileUtils.cp_r("#{config.test_data_dir}/ev", "#{config.test_sandbox_dir}")
   end
 
   def create_submission_from_file(id, user, problem, 

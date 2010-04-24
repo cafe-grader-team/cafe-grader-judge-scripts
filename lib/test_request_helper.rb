@@ -5,6 +5,23 @@
 
 module Grader
 
+  def self.link_or_copy(src, des)
+    begin
+      FileUtils.ln_s(src, des)
+    rescue
+      FileUtils.cp(src,des)
+    end
+  end
+
+  def self.call_and_log(error_message)
+    begin
+      yield
+    rescue
+      msg = "ERROR: #{error_message}"
+      raise msg
+    end
+  end
+   
   #
   # A TestRequestRoomMaker is a helper object for Engine
   # - finds grading room: in user_result_dir/(user)/test_request/ ...
@@ -28,8 +45,8 @@ module Grader
       #    to the sandbox directory later.  The run script should do it.
       #
       if FileTest.exists?("#{test_request.input_file_name}.files")
-        cmd = "cp #{test_request.input_file_name}.files/* #{grading_room}"
-        system(cmd)
+        FileUtils.cp_r("#{test_request.input_file_name}.files/.",
+                       "#{grading_room}")
       end
 
       grading_room
@@ -82,11 +99,12 @@ module Grader
     end
     
     def copy_problem_template(template_dir,problem_home)
-      cmd = "cp -R #{template_dir}/* #{problem_home}"
-      system_and_raise_when_fail(cmd,"Test Request: cannot copy problem template")
+      Grader::call_and_log("Test Request: cannot copy problem template") {
+        FileUtils.cp_r("#{template_dir}/.","#{problem_home}")
+      }
     end
-    
-    def link_input_file(test_request,problem_home)
+
+    def link_input_file(test_request, problem_home)
       input_fname = "#{test_request.input_file_name}"
       if !File.exists?(input_fname)
         raise "Test Request: input file not found."
@@ -97,20 +115,14 @@ module Grader
         FileUtils.rm([input_fname_problem_home], :force => true)
       end
 
-      cmd = "ln -s #{input_fname} #{input_fname_problem_home}" 
-      system_and_raise_when_fail(cmd,"Test Request: cannot link input file")
+      Grader::link_or_copy("#{input_fname}", "#{input_fname_problem_home}")
     end
     
     def remove_data_files(problem_home)
       if File.exists?("#{problem_home}/test_cases/1/input-1.txt")
-        cmd = "rm #{problem_home}/test_cases/1/*"
-        system_and_raise_when_fail(cmd,"Test Request: cannot remove data files")
-      end
-    end
-    
-    def system_and_raise_when_fail(cmd,msg)
-      if !system(cmd)
-        raise msg
+        Grader::call_and_log("Test Request: cannot remove data files") {
+          FileUtils.rm Dir.glob("#{problem_home}/test_cases/1/*")
+        }
       end
     end
     
@@ -221,10 +233,7 @@ module Grader
       target_file_name = random_output_file_name(test_request.user,
                                                  test_request.problem)
       FileUtils.mkdir_p(File.dirname(target_file_name))
-      cmd = "ln -s #{fname} #{target_file_name}"
-      if !system(cmd)
-        raise "TestRequestReporter: cannot move output file"
-      end
+      Grader::link_or_copy("#{fname}", "#{target_file_name}")
       return target_file_name
     end
 
