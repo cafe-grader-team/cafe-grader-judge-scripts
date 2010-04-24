@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 
 require 'erb'
+require 'ftools'
 require 'fileutils'
 require File.join(File.dirname(__FILE__),'lib/import_helper')
 
@@ -32,8 +33,8 @@ def build_testrun_info_from_dir(num_testruns, importing_test_dir, raw_prefix='')
 end
 
 def copy_testcase(importing_test_dir,fname,dir,i)
-  system("cp #{importing_test_dir}/#{fname}.in #{input_filename(dir,i)}")
-  system("cp #{importing_test_dir}/#{fname}.sol #{answer_filename(dir,i)}")
+  File.copy("#{importing_test_dir}/#{fname}.in", "#{input_filename(dir,i)}")
+  File.copy("#{importing_test_dir}/#{fname}.sol", "#{answer_filename(dir,i)}")
 end
 
 def process_options(options)
@@ -113,9 +114,9 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
   # start working
   puts "creating directories"
 
-  system("mkdir #{problem_dir}")
-  system("mkdir #{problem_dir}/script")
-  system("mkdir #{problem_dir}/test_cases")
+  File.makedirs("#{problem_dir}")
+  File.makedirs("#{problem_dir}/script")
+  File.makedirs("#{problem_dir}/test_cases")
 
   puts "copying testcases"
 
@@ -132,7 +133,7 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
       
       puts "copy #{testcase_fname} to #{testcase_num}"
       
-      system("mkdir #{problem_dir}/test_cases/#{testcase_num}")
+      File.makedirs("#{problem_dir}/test_cases/#{testcase_num}")
       copy_testcase("#{testcase_dir}",testcase_fname,"#{problem_dir}/test_cases/#{testcase_num}",testcase_num)
       
       num_testcases += 1
@@ -163,14 +164,14 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
     
     File.chmod(0755,"#{problem_dir}/script/check")
     
-    system("cp #{check_script_fname} #{problem_dir}/script/#{script_name}")
+    File.copy("#{check_script_fname}", "#{problem_dir}/script/#{script_name}")
   else
     if File.exists?(SCRIPT_DIR + "/templates/check.#{check_script}")
       check_script_fname = SCRIPT_DIR + "/templates/check.#{check_script}"
     else
       check_script_fname = check_script
     end
-    system("cp #{check_script_fname} #{problem_dir}/script/check")
+    File.copy("#{check_script_fname}", "#{problem_dir}/script/check")
   end
   
   # generating test_request directory
@@ -185,8 +186,10 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
   cfg_file.puts test_request_all_test_cfg.result
   cfg_file.close
   
-  system("cp #{SCRIPT_DIR}/templates/check_empty #{ev_dir}/test_request/#{problem}/script/check")
-  system("cp #{SCRIPT_DIR}/templates/answer-1.txt #{ev_dir}/test_request/#{problem}/test_cases/1")
+  File.copy("#{SCRIPT_DIR}/templates/check_empty",
+            "#{ev_dir}/test_request/#{problem}/script/check")
+  File.copy("#{SCRIPT_DIR}/templates/answer-1.txt",
+            "#{ev_dir}/test_request/#{problem}/test_cases/1")
   
   puts "done"
 end
