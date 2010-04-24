@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 
+require 'fileutils'
+
 def talk(str)
   if TALKATIVE
     puts str
@@ -85,5 +87,5 @@ talk 'Reading rails environment'
 RAILS_ENV = 'development'
 require RAILS_APP_DIR + '/config/environment'
 
-current_dir = `pwd`
+current_dir = FileUtils.pwd
 grade(ARGV[0].to_i)

@@ -66,7 +66,7 @@ end
 
 log "Making test result and sandbox directories..."
 
-current_dir = `pwd`
+current_dir = FileUtils.pwd
 current_dir.strip!
 
 if ARGV.length >= 3
@@ -99,7 +99,7 @@ rescue
   exit(127)
 end
 execute("#{problem_home}/script/compile #{language} #{source_file}", "Compilation error!")
-compile_message = `cat compiler_message`
+compile_message = open("compiler_message").read
 compile_message.strip!
 call_and_log("Cannot move the compiler message to #{test_result_dir}.") {
   FileUtils.mv("compiler_message", test_result_dir)

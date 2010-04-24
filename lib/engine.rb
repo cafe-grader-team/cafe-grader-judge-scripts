@@ -31,7 +31,7 @@ module Grader
     # takes a submission, asks room_maker to produce grading directories,
     # calls grader scripts, and asks reporter to save the result
     def grade(submission)
-      current_dir = `pwd`.chomp
+      current_dir = FileUtils.pwd
 
       user = submission.user
       problem = submission.problem
