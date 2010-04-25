@@ -136,6 +136,7 @@ module Grader
 
       scripts.each do |s|
         fname = File.basename(s)
+        next if FileTest.directory?(s)
         if !FileTest.exist?("#{script_dir}/#{fname}")
           copied << fname
           FileUtils.cp(s, "#{script_dir}")

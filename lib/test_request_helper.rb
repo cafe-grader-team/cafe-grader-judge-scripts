@@ -8,7 +8,7 @@ module Grader
   def self.link_or_copy(src, des)
     begin
       FileUtils.ln_s(src, des)
-    rescue
+    rescue NotImplementedError
       FileUtils.cp(src,des)
     end
   end
