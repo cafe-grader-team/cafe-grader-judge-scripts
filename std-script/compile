@@ -18,7 +18,7 @@ def talk(msg)
   if ENV['GRADER_LOGGING']!=nil
     log_fname = ENV['GRADER_LOGGING']
     fp = File.open(log_fname,"a")
-    fp.puts("run: #{Time.new.strftime("%H:%M")} #{str}")
+    fp.puts("run: #{Time.new.strftime("%H:%M")} #{msg}")
     fp.close
   end
 end
