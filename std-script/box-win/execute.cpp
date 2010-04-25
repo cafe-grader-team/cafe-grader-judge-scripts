@@ -265,6 +265,37 @@ int check_memory_usage(DWORD pid, int max_mem, int *actual_usage) {
   return (max_mem_usage <= max_mem);
 }
 
+void report_stat(double time_used, int memory_used)
+{
+  fprintf(stderr,"%.4lfr%.4lfu%.4lfs%dm\n",
+	  time_used,
+	  time_used, (double)0, 
+	  memory_used);
+}
+
+double get_process_time_usage(HANDLE hProcess)
+{
+  FILETIME creation_time;
+  FILETIME exit_time;
+  FILETIME kernel_time;
+  FILETIME user_time;
+  GetProcessTimes(hProcess, 
+		  &creation_time,
+		  &exit_time,
+		  &kernel_time,
+		  &user_time);
+
+  SYSTEMTIME sys_kernel_time;
+  SYSTEMTIME sys_user_time;
+  FileTimeToSystemTime(&kernel_time, &sys_kernel_time);
+  FileTimeToSystemTime(&user_time, &sys_user_time);
+
+  double time_used = 
+    ((sys_kernel_time.wSecond + sys_kernel_time.wMilliseconds/1000.0) +
+     (sys_user_time.wSecond + sys_user_time.wMilliseconds/1000.0));
+  return time_used;
+}
+
 int execute(char *exname, char *inname, char *outname, double t, int max_mem)
 {
   STARTUPINFO si;
@@ -289,13 +320,19 @@ int execute(char *exname, char *inname, char *outname, double t, int max_mem)
 		     &pi))  // Pointer to PROCESS_INFORMATION structure. 
     {
       //printf( "CreateProcess failed (%d).\n", GetLastError() );
+      fprintf(stderr, "Process creation error.\n");
+      report_stat(0,0);
+      return EXE_RESULT_ERROR;
     }
   //fprintf(stderr,"Process ID: %ld\n",pi.dwProcessId);
   //fprintf(stderr,"time limit = %d\n",t);
   
   // checking memory usage
   // wait 0.1 sec before checking mem usage
-
+  
+  SetProcessWorkingSetSize(pi.hProcess,
+			   1,
+			   max_mem);
   int actual_memory_usage = 0;
 
   Sleep(INITIAL_WAIT_FOR_MEM_CHECK);
@@ -310,7 +347,7 @@ int execute(char *exname, char *inname, char *outname, double t, int max_mem)
      (WaitForSingleObject(pi.hProcess, 
 			  (int)(t*1000) + 1 
 			  - INITIAL_WAIT_FOR_MEM_CHECK)==WAIT_TIMEOUT)) {
-    // need to kill...
+    // Kill process, because (1) it used too much memory, or (2) time limit
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pi.dwProcessId);
 
     if(ifsuccess != EXE_RESULT_MEMORY)
@@ -343,12 +380,26 @@ int execute(char *exname, char *inname, char *outname, double t, int max_mem)
     if(ifsuccess != EXE_RESULT_MEMORY)
       ifsuccess = EXE_RESULT_TIMEOUT;
   }
+
+  // check memory after terminated
   if((ifsuccess==EXE_RESULT_OK) && 
      (!check_memory_usage(pi.dwProcessId,max_mem, &actual_memory_usage))) {
     // using too much memory
     ifsuccess = EXE_RESULT_MEMORY;
   }
+
+  // check return code
+  if(ifsuccess==EXE_RESULT_OK) {
+    DWORD exitcode;
+    GetExitCodeProcess(pi.hProcess, &exitcode);
+    if(exitcode!=0) {
+      fprintf(stderr,"Exit status %d.\n", (int)exitcode);
+      ifsuccess = EXE_RESULT_ERROR;
+    }
+  }
+
   wait_dialog();
+
   if(si.hStdInput!=NULL)
     CloseHandle(si.hStdInput);
   if(si.hStdOutput!=NULL)
@@ -358,19 +409,19 @@ int execute(char *exname, char *inname, char *outname, double t, int max_mem)
     fprintf(stderr,"OK\n");
   else if(ifsuccess==EXE_RESULT_TIMEOUT)
     fprintf(stderr,"Time limit exceeded.\n");
-  else
+  else if(ifsuccess==EXE_RESULT_MEMORY)
     fprintf(stderr,"Memory limit exceeded.\n");
 
-  double actual_time_usage;
+  double actual_time_usage = get_process_time_usage(pi.hProcess);
+  /*
   if(ifsuccess==EXE_RESULT_TIMEOUT)
     actual_time_usage = t+1;
   else
     actual_time_usage = t;
+  */
 
-  fprintf(stderr,"%.4lfr%.4lfu%.4lfs%dm\n",
-	  actual_time_usage,
-	  actual_time_usage, (double)0, 
-	  (actual_memory_usage + 1023)/1024);
+  report_stat(actual_time_usage,
+	      (actual_memory_usage + 1023)/1024);
   
   return ifsuccess;
 }

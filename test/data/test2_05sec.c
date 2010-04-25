@@ -1,11 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/time.h>
 #include <time.h>
-#include <sys/resource.h>
+#include <windows.h>
 
-// run it for 1.5 s
+// run it for 0.5 s
+
+double get_running_time()
+{
+  FILETIME creation_time;
+  FILETIME exit_time;
+  FILETIME kernel_time;
+  FILETIME user_time;
+  GetProcessTimes(GetCurrentProcess(),
+		  &creation_time,
+		  &exit_time,
+		  &kernel_time,
+		  &user_time);
+
+  SYSTEMTIME sys_kernel_time;
+  SYSTEMTIME sys_user_time;
+
+  FileTimeToSystemTime(&kernel_time, &sys_kernel_time);
+  FileTimeToSystemTime(&user_time, &sys_user_time);
+  
+  double time_used = 
+    ((sys_kernel_time.wSecond + sys_kernel_time.wMilliseconds/1000.0) +
+     (sys_user_time.wSecond + sys_user_time.wMilliseconds/1000.0));  
+  return time_used;
+}
 
 int main()
 {
@@ -17,8 +40,6 @@ int main()
   r = scanf("%d %d",&a,&b);
   printf("%d\n",a+b);
 
-  struct rusage ru;
-
   while(1) {
     c++;
     b+=c;
@@ -26,11 +47,7 @@ int main()
       c++;
       b+=c;
     }
-    getrusage(RUSAGE_SELF,&ru);
-    double rtime = ru.ru_utime.tv_sec + ru.ru_stime.tv_sec;
-    rtime += (double)ru.ru_utime.tv_usec / 1000000.0;
-    rtime += (double)ru.ru_stime.tv_usec / 1000000.0;
-    if(rtime > 0.5)
+    if(get_running_time() > 0.5)
       break;
   }
   printf("%d\n",b);

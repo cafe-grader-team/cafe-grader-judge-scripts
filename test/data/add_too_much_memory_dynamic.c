@@ -9,7 +9,7 @@ int main()
 
   r = scanf("%d %d",&a,&b);
 
-  huge_array = (char *)malloc(5000000);
+  huge_array = (char *)malloc(5*1024*1024);
   if(huge_array==NULL)
     printf("NO!");
   else

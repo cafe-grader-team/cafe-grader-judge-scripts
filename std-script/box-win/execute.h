@@ -11,6 +11,7 @@
 #define EXE_RESULT_OK       0
 #define EXE_RESULT_TIMEOUT  1
 #define EXE_RESULT_MEMORY   2
+#define EXE_RESULT_ERROR    3
 
 #ifdef __cplusplus
 extern "C" {
