@@ -5,6 +5,12 @@
 
 module Grader
 
+  def self.translate_filepath(filename, marker, new_base_path)
+    p = filename.index(marker)
+    end_path = filename[(p+marker.length)..-1]
+    return new_base_path + end_path
+  end
+
   def self.link_or_copy(src, des)
     begin
       FileUtils.ln_s(src, des)
@@ -104,8 +110,15 @@ module Grader
       }
     end
 
+    def translate_input_filename(filename)
+      return Grader::translate_filepath(filename, 
+                                        'input', 
+                                        @config.test_request_input_base_dir)
+    end
+
     def link_input_file(test_request, problem_home)
-      input_fname = "#{test_request.input_file_name}"
+      input_fname = translate_input_filename(test_request.input_file_name)
+
       if !File.exists?(input_fname)
         raise "Test Request: input file not found."
       end
@@ -214,8 +227,9 @@ module Grader
     
     def save_result(test_request,result)
       if result[:output_file_name]!=nil
-        test_request.output_file_name = link_output_file(test_request,
-                                                         result[:output_file_name])
+        org_filename = link_output_file(test_request,
+                                        result[:output_file_name])
+        test_request.output_file_name = translate_output_filename(org_filename)
       end
       test_request.graded_at = Time.now
       test_request.compiler_message = (result[:cmp_msg] or '')
@@ -232,6 +246,12 @@ module Grader
     end
     
     protected
+    def translate_output_filename(filename)
+      return Grader::translate_filepath(filename, 
+                                        'output', 
+                                        @config.test_request_org_output_base_dir)
+    end
+
     def link_output_file(test_request, fname)
       target_file_name = random_output_file_name(test_request.user,
                                                  test_request.problem)

@@ -33,6 +33,10 @@ module Grader
     attr_accessor :test_request_output_base_dir
     attr_accessor :test_request_problem_templates_dir
 
+    # this is for linking output from test request
+    # TODO: find a cleaner way to do this.
+    attr_accessor :test_request_org_output_base_dir
+
     # Comment received from the grading script will be filtered
     # through Configuration#report_comment.  How this method behave
     # depends on this option; right now only two formats, :short and

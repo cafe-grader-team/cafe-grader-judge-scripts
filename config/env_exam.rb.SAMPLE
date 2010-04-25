@@ -16,5 +16,8 @@ Grader::Initializer.run do |config|
   config.test_request_output_base_dir = RAILS_ROOT + "/data/test_request/output"
   config.test_request_problem_templates_dir = config.problems_dir + "/test_request"
  
+  # change this if you want the path on the output to be translated
+  config.test_request_org_output_base_dir = config.test_request_output_base_dir
+ 
   config.comment_report_style = :short
 end
