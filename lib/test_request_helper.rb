@@ -158,7 +158,10 @@ module Grader
 
       if File.exists?(result_file_name)
         output_file_name = "#{test_result_dir}/1/output.txt"
-        results = File.open("#{test_result_dir}/1/result").readlines
+        results = []
+        File.open("#{test_result_dir}/1/result") do |f|
+          results = f.readlines
+        end
         stat = extract_running_stat(results)
 
         return {
