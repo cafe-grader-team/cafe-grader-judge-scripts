@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/ruby
+
+require 'fileutils'
 
 ##############################
 #
@@ -9,99 +11,99 @@
 #
 ##############################
 
-talk ()
-{
-    if [ "$TALKATIVE" != "" ]; then
-	echo "$1"
-    fi
-}
+def talk(msg)
+  if ENV['TALKATIVE']!=nil
+    puts str
+  end
+  if ENV['GRADER_LOGGING']!=nil
+    log_fname = ENV['GRADER_LOGGING']
+    fp = File.open(log_fname,"a")
+    fp.puts("run: #{Time.new.strftime("%H:%M")} #{str}")
+    fp.close
+  end
+end
 
-export C_COMPILER=/usr/bin/gcc
-export CPLUSPLUS_COMPILER=/usr/bin/g++
-export PASCAL_COMPILER=/usr/bin/fpc
+C_COMPILER = "/usr/bin/gcc"
+CPLUSPLUS_COMPILER = "/usr/bin/g++"
+PASCAL_COMPILER = "/usr/bin/fpc"
 
-export C_OPTIONS="-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
-export CPLUSPLUS_OPTIONS="-O2 -s -static -DCONTEST -lm -Wall"
-export PASCAL_OPTIONS="-O1 -XS -dCONTEST"
+C_OPTIONS = "-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
+CPLUSPLUS_OPTIONS = "-O2 -s -static -DCONTEST -lm -Wall"
+PASCAL_OPTIONS = "-O1 -XS -dCONTEST"
 
 # Check for the correct number of arguments. Otherwise, print usage.
-if [ $# -eq 0 -o $# -gt 4 ]
-then
-    echo "Usage: $0 <language> [<source-file>] [<output-file>] [<message-file>]"
-    echo
-    echo "<source-file>  is defaulted to \"source\"."
-    echo "<output-file>  is defaulted to \"a.out\"."
-    echo "<message-file> is defaulted to \"compiler_message\"."
-    echo
-    exit 127
-fi
+if ARGV.length == 0 or ARGV.length > 4
+  puts "Usage: compile <language> [<source-file>] [<output-file>] [<message-file>]"
+  puts
+  puts "<source-file>  is defaulted to \"source\"."
+  puts "<output-file>  is defaulted to \"a.out\"."
+  puts "<message-file> is defaulted to \"compiler_message\"."
+  puts
+  exit(127)
+end
 
-# Retrieve the arguments.
-if [ $# -ge 1 ]
-then
-    export PROG_LANG=$1
-    talk "programming language: ${PROG_LANG}"
-fi
+PARAMS = {
+  :source_file => [1,'source'],
+  :output_file => [2,'a.out'],
+  :message_file => [3,'compiler_message']
+}
 
-if [ $# -ge 2 ]
-then
-    export SOURCE_FILE=$2
-else
-    export SOURCE_FILE=source
-fi
-talk "         source file: $SOURCE_FILE"
-
-if [ $# -ge 3 ]
-then
-    export OUTPUT_FILE=$3
-else
-    export OUTPUT_FILE=a.out
-fi
-talk "         output file: $OUTPUT_FILE"
-
-if [ $# -eq 4 ]
-then
-    export MESSAGE_FILE=$4
-else
-    export MESSAGE_FILE=compiler_message
-fi
-talk "        message file: $MESSAGE_FILE"
+params = {}
+params[:prog_lang] = ARGV[0]
+PARAMS.each_key do |param_name|
+  index, default = PARAMS[param_name]
+  if ARGV.length > index
+    params[param_name] = ARGV[index]
+  else
+    params[param_name] = default
+  end
+  talk "#{param_name}: #{params[param_name]}"
+end
 
 # Remove any remaining output files or message files.
-rm -Rf $OUTPUT_FILE
-rm -Rf $MESSAGE_FILE
+if FileTest.exists? params[:output_file]
+  FileUtils.rm(params[:output_file])
+end
+if FileTest.exists? params[:message_file]
+  FileUtils.rm(params[:message_file])
+end
 
 # Check if the source file exists before attempt compiling.
-if [ ! -f $SOURCE_FILE ]
-then
-    talk "ERROR: The source file does not exist!"
-    echo "ERROR: The source file did not exist." > $MESSAGE_FILE
-    exit 127
-fi
+if !FileTest.exists? params[:source_file]
+  talk("ERROR: The source file does not exist!")
+  open(params[:message_file],"w") do |f|
+    f.puts "ERROR: The source file did not exist."
+  end
+  exit(127)
+end
 
 # Compile.
-if [ $PROG_LANG = "c" ]
-then
-    $C_COMPILER $SOURCE_FILE -o $OUTPUT_FILE $C_OPTIONS 2>$MESSAGE_FILE
-elif [ $PROG_LANG = "c++" ]
-then
-    $CPLUSPLUS_COMPILER $SOURCE_FILE -o $OUTPUT_FILE $CPLUSPLUS_OPTIONS 2>$MESSAGE_FILE
-elif [ $PROG_LANG = "pas" ]
-then
-    $PASCAL_COMPILER $SOURCE_FILE -ooutpas $PASCAL_OPTIONS >$MESSAGE_FILE
-    mv outpas $OUTPUT_FILE
-else
-    talk "ERROR: Invalid language specified!"
-    echo "ERROR: Invalid language specified!" > $MESSAGE_FILE
-    exit 127
-fi
+case params[:prog_lang]
+
+  when "c"
+  command = "#{C_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{C_OPTIONS} 2> #{params[:message_file]}"
+  system(command)
+
+  when "c++"
+  command = "#{CPLUSPLUS_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{CPLUSPLUS_OPTIONS} 2> #{params[:message_file]}"
+  system(command)
+  
+  when "pas"
+  command = "#{PASCAL_COMPILER} #{params[:source_file]} -ooutpas #{PASCAL_OPTIONS} > #{params[:message_file]}"
+  system(command)
+  FileUtils.mv("output", params[:output_file])
+  
+  else
+  talk("ERROR: Invalid language specified!")
+  open(params[:message_file],"w") do |f|
+    f.puts "ERROR: Invalid language specified!"
+  end
+  exit(127)
+end
 
 # Report success or failure.
-if [ -f $OUTPUT_FILE ]
-then
-    talk "Compilation was successful!"    
+if FileTest.exists? params[:output_file]
+  talk "Compilation was successful!"    
 else
-    talk "ERROR: Something was wrong during the compilation!"
-    talk "Dumping compiler message:"
-    #cat $MESSAGE_FILE
-fi
+  talk "ERROR: Something was wrong during the compilation!"
+end
