@@ -85,6 +85,7 @@ case params[:prog_lang]
   system(command)
 
   when "c++"
+  when "cpp"
   command = "#{CPLUSPLUS_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{CPLUSPLUS_OPTIONS} 2> #{params[:message_file]}"
   system(command)
   
