@@ -1,15 +1,10 @@
 #!/usr/bin/ruby
 
+require 'fileutils'
+
 def talk(str)
   if TALKATIVE
     puts str
-  end
-end
-
-def execute(command, error_message="")
-  if not system(command)
-    puts "ERROR: #{error_message}"
-    exit(127)
   end
 end
 
@@ -81,18 +76,6 @@ def grade(submission_id)
   save_result(sub,read_result("#{problem_out_dir}/test-result"))
 end
 
-def stop_grader
-  File.open(File.dirname(__FILE__) + '/stop','w')
-end
-
-def check_stopfile
-  FileTest.exist?(File.dirname(__FILE__) + '/stop')
-end
-
-def clear_stopfile
-  system("rm " + File.dirname(__FILE__) + '/stop')
-end
-
 # reading environment and options
 GRADER_ENV = 'exam'
 puts "environment: #{GRADER_ENV}"
@@ -104,7 +87,5 @@ talk 'Reading rails environment'
 RAILS_ENV = 'development'
 require RAILS_APP_DIR + '/config/environment'
 
-current_dir = `pwd`
+current_dir = FileUtils.pwd
 grade(ARGV[0].to_i)
-
-

@@ -1,5 +1,4 @@
 require 'fileutils'
-require 'ftools'
 require File.join(File.dirname(__FILE__),'dir_init')
 
 module Grader
@@ -32,7 +31,7 @@ module Grader
     # takes a submission, asks room_maker to produce grading directories,
     # calls grader scripts, and asks reporter to save the result
     def grade(submission)
-      current_dir = `pwd`.chomp
+      current_dir = FileUtils.pwd
 
       user = submission.user
       problem = submission.problem
@@ -137,9 +136,10 @@ module Grader
 
       scripts.each do |s|
         fname = File.basename(s)
+        next if FileTest.directory?(s)
         if !FileTest.exist?("#{script_dir}/#{fname}")
           copied << fname
-          system("cp #{s} #{script_dir}")
+          FileUtils.cp(s, "#{script_dir}")
         end
       end
       
@@ -174,7 +174,7 @@ module Grader
 
     def clear_script(log,problem_home)
       log.each do |s|
-        system("rm #{problem_home}/script/#{s}")
+        FileUtils.rm("#{problem_home}/script/#{s}")
       end
     end
 

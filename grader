@@ -15,7 +15,7 @@ end
 
 def clear_stopfile
   if FileTest.exist?(File.dirname(__FILE__) + "/stop.#{Process.pid}")
-    system("rm " + File.dirname(__FILE__) + "/stop.#{Process.pid}")
+    File.delete(File.dirname(__FILE__) + "/stop.#{Process.pid}")
   end
 end
 

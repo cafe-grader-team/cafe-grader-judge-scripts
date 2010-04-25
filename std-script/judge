@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 
+require 'fileutils'
+
 def log(str='')
   if ENV['TALKATIVE']!=nil
     puts str
@@ -20,6 +22,21 @@ def execute(command, error_message="")
     log msg
     raise msg
   end
+end
+
+def call_and_log(error_message)
+  begin
+    yield
+  rescue
+    msg = "ERROR: #{error_message}"
+    log msg
+    raise msg
+  end
+end
+
+def clear_and_create_empty_dir(dir)
+  FileUtils.rm_rf(dir, :secure => true)
+  call_and_log("Cannot make directory #{dir}.") { FileUtils.mkdir(dir) }
 end
 
 # ARGV[0] --- language
@@ -49,7 +66,7 @@ end
 
 log "Making test result and sandbox directories..."
 
-current_dir = `pwd`
+current_dir = FileUtils.pwd
 current_dir.strip!
 
 if ARGV.length >= 3
@@ -57,9 +74,9 @@ if ARGV.length >= 3
 else
   test_result_dir = "#{current_dir}/test-result"
 end
+
 log "Test result directory: #{test_result_dir}"
-system("rm -Rf #{test_result_dir}")
-execute("mkdir #{test_result_dir}", "Cannot make directory #{test_result_dir}.")
+clear_and_create_empty_dir(test_result_dir)
 
 if ARGV.length >= 4
   sandbox_dir = ARGV[3]
@@ -67,13 +84,14 @@ else
   sandbox_dir = "#{current_dir}/sandbox"
 end
 log "Sandbox directory: #{sandbox_dir}"
-system("rm -Rf #{sandbox_dir}")
-execute("mkdir #{sandbox_dir}", "Cannot make directory #{sandbox_dir}")
+clear_and_create_empty_dir(sandbox_dir)
 
 # Compile
 log
 log "Compiling..."
-execute("cp #{source_file} #{sandbox_dir}", "Cannot copy the source file to #{sandbox_dir}")
+call_and_log("Cannot copy the source file to #{sandbox_dir}") { 
+  FileUtils.cp(source_file, sandbox_dir) 
+}
 begin 
   Dir.chdir sandbox_dir
 rescue
@@ -81,15 +99,19 @@ rescue
   exit(127)
 end
 execute("#{problem_home}/script/compile #{language} #{source_file}", "Compilation error!")
-compile_message = `cat compiler_message`
+compile_message = open("compiler_message").read
 compile_message.strip!
-execute("mv compiler_message #{test_result_dir}", "Cannot move the compiler message to #{test_result_dir}.")
+call_and_log("Cannot move the compiler message to #{test_result_dir}.") {
+  FileUtils.mv("compiler_message", test_result_dir)
+}
 if !FileTest.exist?("a.out")
   log "Cannot compile the source code. See message in #{test_result_dir}/compile_message"
   exit(127)
 else
-  execute("mv a.out #{test_result_dir}", "Cannot move the compiled program to #{test_result_dir}")
-  system("rm -Rf #{sandbox_dir}/*")
+  call_and_log("Cannot move the compiled program to #{test_result_dir}") {
+    FileUtils.mv("a.out",test_result_dir)
+  }
+  FileUtils.rm_rf("#{sandbox_dir}/.")
 end
 
 require "#{problem_home}/script/test_dsl.rb"
@@ -108,17 +130,29 @@ end
   $stdout.flush
 
   log "Test number: #{test_num}"
-  execute("cp #{test_result_dir}/a.out #{sandbox_dir}", "Cannot copy the compiled program into #{sandbox_dir}")
+  call_and_log("Cannot copy the compiled program into #{sandbox_dir}") {
+    FileUtils.cp("#{test_result_dir}/a.out", sandbox_dir)
+  }
   begin
     execute("#{problem_home}/script/run #{language} #{test_num}", "Error occured during execution of the run script")
   rescue
     # do nothing
   end
-  execute("mkdir #{test_result_dir}/#{test_num}", "Cannot create directory #{test_result_dir}/#{test_num}")
-  execute("mv #{sandbox_dir}/result #{test_result_dir}/#{test_num}", "Cannot copy the result file into #{test_result_dir}/#{test_num}")
-  execute("mv #{sandbox_dir}/comment #{test_result_dir}/#{test_num}", "Cannot copy the comment file into #{test_result_dir}/#{test_num}")
-  execute("mv #{sandbox_dir}/output.txt #{test_result_dir}/#{test_num}", "Cannot copy the output file into #{test_result_dir}/#{test_num}")
-  execute("rm -Rf #{sandbox_dir}/*", "Cannot clear #{sandbox_dir}")
+  call_and_log("Cannot create directory #{test_result_dir}/#{test_num}") {
+    FileUtils.mkdir "#{test_result_dir}/#{test_num}"
+  }
+  call_and_log("Cannot copy the result file into #{test_result_dir}/#{test_num}") {
+    FileUtils.mv "#{sandbox_dir}/result", "#{test_result_dir}/#{test_num}"
+  }
+  call_and_log("Cannot copy the comment file into #{test_result_dir}/#{test_num}") {
+    FileUtils.mv "#{sandbox_dir}/comment", "#{test_result_dir}/#{test_num}"
+  }
+  call_and_log("Cannot copy the output file into #{test_result_dir}/#{test_num}") {
+    FileUtils.mv "#{sandbox_dir}/output.txt", "#{test_result_dir}/#{test_num}"
+  }
+  call_and_log("Cannot clear #{sandbox_dir}") {
+    FileUtils.rm_rf(Dir.glob("#{sandbox_dir}/*"), :secure => true)
+  }
 end
 
 $stdout.print "[done]\n"

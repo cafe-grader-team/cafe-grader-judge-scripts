@@ -25,7 +25,7 @@ module DirInit
     # Check if someone has initialized the dir.  If not, call block.
 
     def setup    # :yields: block
-      dir = File.new(@dir_name)
+      dir = File.new(@dir_name + '/lockfile',"w+")
       dir.flock(File::LOCK_EX)
       begin
         counter_filename = get_counter_filename
