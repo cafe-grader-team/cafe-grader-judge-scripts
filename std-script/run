@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 
+require 'fileutils'
+
 def log(str='')
   if ENV['TALKATIVE']!=nil
     puts str
