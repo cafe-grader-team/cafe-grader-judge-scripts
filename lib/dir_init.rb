@@ -22,10 +22,14 @@ module DirInit
       @usage_filename = usage_filename
     end
 
+    def lock_filename
+      return @dir_name + '/lockfile'
+    end
+
     # Check if someone has initialized the dir.  If not, call block.
 
     def setup    # :yields: block
-      dir = File.new(@dir_name + '/lockfile',"w+")
+      dir = File.new(lock_filename,"w+")
       dir.flock(File::LOCK_EX)
       begin
         counter_filename = get_counter_filename
@@ -64,7 +68,7 @@ module DirInit
     # Check if I am the last one using the dir.  If true, call block.
 
     def teardown
-      dir = File.new(@dir_name)
+      dir = File.new(lock_filename)
       dir.flock(File::LOCK_EX)
       begin
         counter_filename = get_counter_filename
