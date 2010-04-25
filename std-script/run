@@ -73,7 +73,7 @@ mem_limit = problem.get_mem_limit(test_num) * 1024
 #`cp #{problem_home}/test_cases/#{test_num}/#{input_file_name} .`
 
 # check if box is there, if not, compile it!
-if !File.exists?("#{problem_home}/script/box")
+if !File.exists?("#{problem_home}/script/box") and !File.exists?("#{problem_home}/script/box.exe")
   log "WARNING: Compiling box: to increase efficiency, it should be compile manually"
   compile_box("#{problem_home}/script/box.cc",
               "#{problem_home}/script/box")
@@ -145,7 +145,7 @@ end
 check_command = "#{problem_home}/script/check #{language} #{test_num}"
 log "Checking the output..."
 log check_command
-if not system(check_command)
+if not system("ruby " + check_command)
   log "Problem with check script"
   report.call("Incorrect",0,"Check script error.\n")
   exit(127)

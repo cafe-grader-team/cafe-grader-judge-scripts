@@ -23,9 +23,9 @@ def talk(msg)
   end
 end
 
-C_COMPILER = "/usr/bin/gcc"
-CPLUSPLUS_COMPILER = "/usr/bin/g++"
-PASCAL_COMPILER = "/usr/bin/fpc"
+C_COMPILER = "gcc"
+CPLUSPLUS_COMPILER = "g++"
+PASCAL_COMPILER = "fpc"
 
 C_OPTIONS = "-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
 CPLUSPLUS_OPTIONS = "-O2 -s -static -DCONTEST -lm -Wall"

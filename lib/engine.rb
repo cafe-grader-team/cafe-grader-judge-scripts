@@ -117,7 +117,7 @@ module Grader
       Dir.chdir grading_dir
       cmd = "#{problem_home}/script/judge #{language} #{fname}"
       talk "CMD: #{cmd}"
-      system(cmd)
+      system("ruby " + cmd)
     end
 
     def get_std_script_dir

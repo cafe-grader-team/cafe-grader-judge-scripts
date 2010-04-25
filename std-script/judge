@@ -98,9 +98,11 @@ rescue
   log "ERROR: Cannot change directory to #{sandbox_dir}."
   exit(127)
 end
-execute("#{problem_home}/script/compile #{language} #{source_file}", "Compilation error!")
-compile_message = open("compiler_message").read
-compile_message.strip!
+execute("ruby #{problem_home}/script/compile #{language} #{source_file}", "Compilation error!")
+open("compiler_message") do |f|
+  compile_message = f.read
+  compile_message.strip!
+end
 call_and_log("Cannot move the compiler message to #{test_result_dir}.") {
   FileUtils.mv("compiler_message", test_result_dir)
 }
@@ -134,7 +136,7 @@ end
     FileUtils.cp("#{test_result_dir}/a.out", sandbox_dir)
   }
   begin
-    execute("#{problem_home}/script/run #{language} #{test_num}", "Error occured during execution of the run script")
+    execute("ruby #{problem_home}/script/run #{language} #{test_num}", "Error occured during execution of the run script")
   rescue
     # do nothing
   end
@@ -166,7 +168,7 @@ rescue
   log "ERROR: Cannot change directory to #{test_result_dir}."
   exit(127)
 end
-execute("#{problem_home}/script/grade", "An error occured during grading!")
+execute("ruby #{problem_home}/script/grade", "An error occured during grading!")
 
 log
 log "All done!"
