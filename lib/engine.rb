@@ -51,8 +51,8 @@ module Grader
         lang_ext = 'c'
       end
 
-      # FIX THIS
-      talk 'some hack on language'
+      # This is needed because older version of std-scripts/compile
+      # only look for c++.
       if language == 'cpp'
         language = 'c++'
       end
