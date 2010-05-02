@@ -28,6 +28,17 @@ describe "A grader engine, when grading submissions" do
   end
   
 
+  it "should grade normal submission in C++" do
+    cpp_lang = stub(Language, :name => 'cpp', :ext => 'cpp')
+
+    grader_should(:grade => "test1_correct_cc.cc",
+                  :language => cpp_lang,
+                  :on => @problem_test_normal,
+                  :and_report => {
+                    :score => 135,
+                    :comment => /^(\[|P|\])+/})
+  end
+  
   it "should produce error message when submission cannot compile" do
     grader_should(:grade => "test1_compile_error.c",
                   :on => @problem_test_normal,
@@ -122,8 +133,9 @@ describe "A grader engine, when grading submissions" do
   def grader_should(args)
     @user1 = stub(User,
                   :id => 1, :login => 'user1')
+
     submission = 
-      create_submission_from_file(1, @user1, args[:on], args[:grade])
+      create_submission_from_file(1, @user1, args[:on], args[:grade], args[:language])
     submission.should_receive(:graded_at=)
 
     expected_score = args[:and_report][:score]
