@@ -15,6 +15,7 @@ def talk(msg)
   if ENV['TALKATIVE']!=nil
     puts str
   end
+
   if ENV['GRADER_LOGGING']!=nil
     log_fname = ENV['GRADER_LOGGING']
     fp = File.open(log_fname,"a")
@@ -81,15 +82,31 @@ if params[:prog_lang]=='cpp':
     params[:prog_lang] = 'c++'
 end
 
+forbidden_functions = ['system', 'fopen', 'freopen', 'open', 'remove', 'rename']
+redefine_list = []
+forbidden_count = 0
+forbidden_key = (rand(8999) + 1000).to_s
+forbidden_functions.each do |f|
+  redefine_list << "-D#{f}=forbidden#{forbidden_key}#{forbidden_count}"
+  forbidden_count += 1
+end		 
+redefine_str = redefine_list.join ' '
+puts redefine_str
+
 # Compile.
 case params[:prog_lang]
 
   when "c"
-  command = "#{C_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{C_OPTIONS} 2> #{params[:message_file]}"
+  command = "#{C_COMPILER} -E #{params[:source_file]} -o source_prep.c"
+  system(command)
+  command = "#{C_COMPILER} source_prep.c #{redefine_str} -o #{params[:output_file]} #{C_OPTIONS} 2> #{params[:message_file]}"
+  puts command
   system(command)
 
   when "c++"
-  command = "#{CPLUSPLUS_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{CPLUSPLUS_OPTIONS} 2> #{params[:message_file]}"
+  command = "#{CPLUSPLUS_COMPILER} -E #{params[:source_file]} -o source_prep.cpp"
+  system(command)
+  command = "#{CPLUSPLUS_COMPILER} #{redefine_str} #{params[:source_file]} -o #{params[:output_file]} #{CPLUSPLUS_OPTIONS} 2> #{params[:message_file]}"
   system(command)
   
   when "pas"
