@@ -42,8 +42,7 @@ module Grader
     def report(sub,test_result_dir)
       result = read_result(test_result_dir)
       if @result_collector
-        @result_collector.save(sub.user, 
-                               sub.problem,
+        @result_collector.save(sub,                               
                                result)
       end
       save_result(sub,result)

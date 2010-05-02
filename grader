@@ -129,10 +129,12 @@ class ResultCollector
     @users = {}
   end
 
-  def after_save_hook(user, problem, grading_result)
+  def after_save_hook(submission, grading_result)
   end
 
-  def save(user, problem, grading_result)
+  def save(submission, grading_result)
+    user = submission.user
+    problem = submission.problem
     if not @problems.has_key? problem.id
       @problems[problem.id] = problem
     end
@@ -141,7 +143,7 @@ class ResultCollector
     end
     @results[[user.id, problem.id]] = grading_result
 
-    after_save_hook(user, problem, grading_result)
+    after_save_hook(submission, grading_result)
   end
 
   def print_report_by_user
