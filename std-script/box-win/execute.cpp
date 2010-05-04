@@ -301,6 +301,9 @@ int execute(char *exname, char *inname, char *outname, double t, int max_mem)
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
   int ifsuccess = EXE_RESULT_OK;
+
+  SetErrorMode(SEM_FAILCRITICALERRORS);
+  SetErrorMode(SEM_NOGPFAULTERRORBOX);
   
   ZeroMemory(&si, sizeof(si));
   si.cb = sizeof(si);
