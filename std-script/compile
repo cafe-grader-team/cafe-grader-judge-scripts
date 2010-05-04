@@ -82,7 +82,7 @@ if params[:prog_lang]=='cpp':
     params[:prog_lang] = 'c++'
 end
 
-forbidden_functions = ['system', 'fopen', 'freopen', 'open', 'remove', 'rename']
+forbidden_functions = ['system', 'fopen', 'freopen', 'open', 'remove', 'rename', 'getch']
 redefine_list = []
 forbidden_count = 0
 forbidden_key = (rand(8999) + 1000).to_s
@@ -97,18 +97,21 @@ puts redefine_str
 case params[:prog_lang]
 
   when "c"
-  command = "#{C_COMPILER} -E #{params[:source_file]} -o source_prep.c"
+  command = "#{C_COMPILER} -E #{params[:source_file]} -o source_prep.c 2> #{params[:message_file]}"
   system(command)
-  command = "#{C_COMPILER} source_prep.c #{redefine_str} -o #{params[:output_file]} #{C_OPTIONS} 2> #{params[:message_file]}"
-  puts command
-  system(command)
+  if FileTest.exist? "source_prep.c"
+    command = "#{C_COMPILER} source_prep.c #{redefine_str} -o #{params[:output_file]} #{C_OPTIONS} 2> #{params[:message_file]}"
+    system(command)
+  end
 
   when "c++"
-  command = "#{CPLUSPLUS_COMPILER} -E #{params[:source_file]} -o source_prep.cpp"
+  command = "#{CPLUSPLUS_COMPILER} -E #{params[:source_file]} -o source_prep.cpp 2> #{params[:message_file]}"
   system(command)
-  command = "#{CPLUSPLUS_COMPILER} #{redefine_str} source_prep.cpp -o #{params[:output_file]} #{CPLUSPLUS_OPTIONS} 2> #{params[:message_file]}"
-  system(command)
-  
+  if FileTest.exist? "source_prep.cpp"
+    command = "#{CPLUSPLUS_COMPILER} #{redefine_str} source_prep.cpp -o #{params[:output_file]} #{CPLUSPLUS_OPTIONS} 2> #{params[:message_file]}"
+    system(command)
+  end	
+
   when "pas"
   command = "#{PASCAL_COMPILER} #{params[:source_file]} -ooutpas #{PASCAL_OPTIONS} > #{params[:message_file]}"
   system(command)
@@ -124,7 +127,15 @@ end
 
 # Report success or failure.
 if FileTest.exists? params[:output_file]
-  talk "Compilation was successful!"    
+  talk "Compilation was successful!"
+
+  if File.size(params[:output_file]) > 100000000
+    talk "But the executable is too big."
+    open(params[:message_file],"w+") do |f|
+      f.puts "Executable is too large."
+    end    
+    File.delete(params[:output_file])
+  end
 else
   talk "ERROR: Something was wrong during the compilation!"
 end

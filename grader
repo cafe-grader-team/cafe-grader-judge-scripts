@@ -249,6 +249,9 @@ def grader_autonew_loop(grader_proc, options)
 
     if submissions.length != 0
       submissions.each do |submission|
+        if (submission.problem == nil) or (!submission.problem.available)
+          next
+        end
         if ! graded_submission_ids[submission.id]
           runner.grade_submission(submission)
           graded_submission_ids[submission.id] = true
