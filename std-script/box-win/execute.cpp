@@ -343,10 +343,32 @@ int execute(char *exname, char *inname, char *outname, double t, int max_mem)
     ifsuccess = EXE_RESULT_MEMORY;
   }
 
-  if((ifsuccess == EXE_RESULT_MEMORY) ||
-     (WaitForSingleObject(pi.hProcess, 
-			  (int)(t*1000) + 1 
-			  - INITIAL_WAIT_FOR_MEM_CHECK)==WAIT_TIMEOUT)) {
+  //printf("PID: %d\n", pi.dwProcessId);
+
+  if(ifsuccess != EXE_RESULT_MEMORY) {
+    int based_time = (int)(t*1000) + 1 - INITIAL_WAIT_FOR_MEM_CHECK;
+    bool major_timed_out = (WaitForSingleObject(pi.hProcess, 
+						based_time)==WAIT_TIMEOUT);
+    if(major_timed_out) {
+      // wait some more for user time.
+      double time_used = get_process_time_usage(pi.hProcess);
+      while(time_used <= t) {
+	int iter_time = 100;
+	if(t - time_used < 200)
+	  iter_time = 20;
+	bool iter_timed_out = (WaitForSingleObject(pi.hProcess, 
+						   iter_time)==WAIT_TIMEOUT);
+	if(!iter_timed_out)
+	  break;
+	
+	time_used = get_process_time_usage(pi.hProcess);
+	//printf("%lf\n",time_used);
+      }
+      ifsuccess = EXE_RESULT_TIMEOUT;
+    }
+  }
+
+  if((ifsuccess == EXE_RESULT_MEMORY) || (ifsuccess == EXE_RESULT_TIMEOUT)) {
     // Kill process, because (1) it used too much memory, or (2) time limit
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pi.dwProcessId);
 
