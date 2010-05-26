@@ -12,7 +12,6 @@ sudo apt-get install mysql-server mysql-client ruby1.8 ruby1.8-dev rdoc1.8 \
 echo "Installing rails"
 
 sudo gem install rails --no-ri --no-rdoc
-sudo gem install rack -v=1.0.1 --no-ri --no-rdoc
 
 echo "Fetching Cafe Grader from Git repositories"
 
@@ -20,7 +19,7 @@ echo "Fetching web interface"
 
 mkdir cafe_grader
 cd cafe_grader
-git clone  http://git.gitorious.org/cafe-grader/cafe-grader-web.git web
+git clone -q http://git.gitorious.org/cafe-grader/cafe-grader-web.git web
 
 echo "Configuring rails app"
 
@@ -106,7 +105,7 @@ cd ..
 
 mkdir judge
 cd judge
-git clone  http://git.gitorious.org/cafe-grader/cafe-grader-judge-scripts.git scripts
+git clone -q http://git.gitorious.org/cafe-grader/cafe-grader-judge-scripts.git scripts
 mkdir raw
 mkdir ev-exam
 mkdir ev
