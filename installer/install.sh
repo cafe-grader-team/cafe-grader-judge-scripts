@@ -11,7 +11,7 @@ sudo apt-get install mysql-server mysql-client ruby1.8 ruby1.8-dev rdoc1.8 \
 
 echo "Installing rails"
 
-sudo gem install rails --no-ri --no-rdoc
+sudo gem install rails --no-ri --no-rdoc --version=2.3.8
 
 echo "Fetching Cafe Grader from Git repositories"
 
