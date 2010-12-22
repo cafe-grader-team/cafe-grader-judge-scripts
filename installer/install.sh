@@ -19,7 +19,7 @@ echo "Fetching web interface"
 
 mkdir cafe_grader
 cd cafe_grader
-git clone -q http://git.gitorious.org/cafe-grader/cafe-grader-web.git web
+git clone -q git://gitorious.org/cafe-grader/cafe-grader-web.git web
 
 echo "Configuring rails app"
 
