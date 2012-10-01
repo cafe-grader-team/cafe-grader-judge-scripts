@@ -12,7 +12,7 @@ module GraderEngineHelperMethods
     config = Grader::Configuration.get_instance
     clear_sandbox
     FileUtils.mkdir_p config.user_result_dir
-    FileUtils.cp_r("#{config.test_data_dir}/ev", "#{config.test_sandbox_dir}")
+    FileUtils.cp_r("#{config.test_data_dir}/ev", "#{config.test_sandbox_dir}",:preserve => true)
   end
 
   def create_submission_from_file(id, user, problem, 

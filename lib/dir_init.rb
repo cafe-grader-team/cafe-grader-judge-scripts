@@ -1,4 +1,4 @@
-require 'ftools'
+require 'fileutils'
 
 # DirInit::Manager handles directory initialization and clean-up when
 # there are many concurrent processes that wants to modify the

@@ -34,6 +34,7 @@ int main()
       break;
   }
   printf("%d\n",b);
+  a += r;
   exit(0);
 }
 

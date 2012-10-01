@@ -9,6 +9,8 @@ int main()
     printf("100\n");
   else
     printf("%d\n",a+b);
+
+  a+=r;
   return 0;
 }
 

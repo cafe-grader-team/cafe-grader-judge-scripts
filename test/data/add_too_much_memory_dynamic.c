@@ -14,7 +14,8 @@ int main()
     printf("NO!");
   else
     printf("%d\n",a+b);
-
+  
+  a+=r;
   return 0;
 }
 

@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 require 'fileutils'
 
@@ -20,7 +20,7 @@ def execute(command, error_message="")
   if not system(command)
     msg = "ERROR: #{error_message}"
     log msg
-    raise msg
+    raise(msg)
   end
 end
 
@@ -130,14 +130,17 @@ end
   $stdout.flush
 
   log "Test number: #{test_num}"
+
   call_and_log("Cannot copy the compiled program into #{sandbox_dir}") {
-    FileUtils.cp("#{test_result_dir}/a.out", sandbox_dir)
+    FileUtils.cp("#{test_result_dir}/a.out", sandbox_dir, :preserve => true)
   }
+
   begin
     execute("#{problem_home}/script/run #{language} #{test_num}", "Error occured during execution of the run script")
   rescue
     # do nothing
   end
+
   call_and_log("Cannot create directory #{test_result_dir}/#{test_num}") {
     FileUtils.mkdir "#{test_result_dir}/#{test_num}"
   }

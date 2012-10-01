@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 require 'fileutils'
 
@@ -77,8 +77,8 @@ if !FileTest.exists? params[:source_file]
   exit(127)
 end
 
-if params[:prog_lang]=='cpp':
-    params[:prog_lang] = 'c++'
+if params[:prog_lang]=='cpp'
+  params[:prog_lang] = 'c++'
 end
 
 # Compile.

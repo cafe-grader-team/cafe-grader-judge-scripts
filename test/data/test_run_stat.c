@@ -25,6 +25,8 @@ int main()
     printf("hello");
   else
     printf("%d\n",d);
+
+  a += r;
   return 0;
 }
 

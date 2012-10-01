@@ -8,5 +8,6 @@ int main()
   r = scanf("%d %d",&a,&b);
   while(1)
     ;
+  a += r;
 }
 

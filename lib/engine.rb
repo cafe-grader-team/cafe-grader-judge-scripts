@@ -90,7 +90,7 @@ module Grader
         dinit.teardown do
           copy_log = load_copy_log(problem_home)
           clear_copy_log(problem_home)
-          clear_script(copy_log,problem_home)
+          #clear_script(copy_log,problem_home)
         end
 
       rescue RuntimeError => msg
@@ -139,7 +139,7 @@ module Grader
         next if FileTest.directory?(s)
         if !FileTest.exist?("#{script_dir}/#{fname}")
           copied << fname
-          FileUtils.cp(s, "#{script_dir}")
+          FileUtils.cp(s, "#{script_dir}", :preserve => true)
         end
       end
       
