@@ -90,7 +90,7 @@ module Grader
         dinit.teardown do
           copy_log = load_copy_log(problem_home)
           clear_copy_log(problem_home)
-          #clear_script(copy_log,problem_home)
+          clear_script(copy_log,problem_home)
         end
 
       rescue RuntimeError => msg
