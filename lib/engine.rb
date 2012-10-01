@@ -112,6 +112,7 @@ module Grader
 
     def call_judge(problem_home,language,grading_dir,fname)
       ENV['PROBLEM_HOME'] = problem_home
+      ENV['RUBYOPT'] = ''
       
       talk grading_dir
       Dir.chdir grading_dir
