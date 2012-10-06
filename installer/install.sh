@@ -2,16 +2,27 @@
 
 echo "This script will install and configure Cafe grader."
 
-echo "Installing required apt"
+echo "This will install Ruby 1.9.2 under rvm"
+
+echo "Installing required apts"
 
 sudo apt-get update
-sudo apt-get install mysql-server mysql-client ruby1.8 ruby1.8-dev rdoc1.8 \
-  g++ gcc libmysql-ruby1.8 irb apache2 libmysqlclient15-dev build-essential \
-  git-core rubygems rake openssl libopenssl-ruby
+sudo apt-get install mysql-server mysql-client \
+  g++ gcc apache2 libmysqlclient15-dev build-essential \
+  git-core openssl libreadline6 libreadline6-dev \
+  zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev \
+  sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev \
+  ncurses-dev automake libtool bison subversion \
+  pkg-config curl nodejs
 
-echo "Installing rails"
+echo "Installing RVM"
+curl -L https://get.rvm.io | bash -s stable
+~/.rvm/scripts/rvm
 
-sudo gem install rails --no-ri --no-rdoc --version=2.3.8
+echo "Installing Ruby 1.9.2 in RVM"
+
+rvm install 1.9.2
+rvm use 1.9.2
 
 echo "Fetching Cafe Grader from Git repositories"
 
@@ -19,11 +30,12 @@ echo "Fetching web interface"
 
 mkdir cafe_grader
 cd cafe_grader
-git clone -q git://gitorious.org/cafe-grader/cafe-grader-web.git web
+git clone -q git://github.com/jittat/cafe-grader-web.git web
 
 echo "Configuring rails app"
 
-cp web/config/environment.rb.SAMPLE web/config/environment.rb
+cp web/config/application.rb.SAMPLE web/config/application.rb
+cp web/config/initializers/cafe_grader_config.rb.SAMPLE web/config/initializers/cafe_grader_config.rb
 
 echo "At this point we will need MySQL user and database."
 echo "Have you created MySQL user and database for Cafe grader? (Y/N) "
@@ -67,30 +79,35 @@ echo "Please provide $username password:"
 read password
 
 echo "development:" > config/database.yml
-echo "  adapter: mysql" >> config/database.yml
+echo "  adapter: mysql2" >> config/database.yml
+echo "  encoding: utf8" >> config/database.yml
+echo "  reconnect: false" >> config/database.yml
 echo "  database: $database" >> config/database.yml 
+echo "  pool: 5" >> config/database.yml
 echo "  username: $username" >> config/database.yml
 echo "  password: $password" >> config/database.yml
 echo "  host: localhost" >> config/database.yml
+echo "  socket: /var/run/mysqld/mysqld.sock" >> config/database.yml
 echo "" >> config/database.yml
 echo "production:" >> config/database.yml
-echo "  adapter: mysql" >> config/database.yml
+echo "  adapter: mysql2" >> config/database.yml
+echo "  encoding: utf8" >> config/database.yml
+echo "  reconnect: false" >> config/database.yml
 echo "  database: $database" >> config/database.yml 
+echo "  pool: 5" >> config/database.yml
 echo "  username: $username" >> config/database.yml
 echo "  password: $password" >> config/database.yml
 echo "  host: localhost" >> config/database.yml
+echo "  socket: /var/run/mysqld/mysqld.sock" >> config/database.yml
 
-echo "Object.instance_eval{remove_const :GRADER_ROOT_DIR}" >> config/environment.rb
-echo "Object.instance_eval{remove_const :GRADING_RESULT_DIR}" >> config/environment.rb
-echo "GRADER_ROOT_DIR = '$CAFE_PATH/judge'" >> config/environment.rb
-echo "GRADING_RESULT_DIR = '$CAFE_PATH/judge/result'" >> config/environment.rb
+echo "Object.instance_eval{remove_const :GRADER_ROOT_DIR}" >> config/initializers/cafe_grader_config.rb 
+echo "Object.instance_eval{remove_const :GRADING_RESULT_DIR}" >> config/initializers/cafe_grader_config.rb
+echo "GRADER_ROOT_DIR = '$CAFE_PATH/judge'" >> config/initializers/cafe_grader_config.rb
+echo "GRADING_RESULT_DIR = '$CAFE_PATH/judge/result'" >> config/initializers/cafe_grader_config.rb
 
 echo "Installing required gems"
 
-sudo rake gems:install
-# to remove log file owned by root
-sudo rm log/*
-sudo rmdir log
+bundle install
 
 echo "Running rake tasks to initialize database"
 
@@ -105,7 +122,7 @@ cd ..
 
 mkdir judge
 cd judge
-git clone -q http://git.gitorious.org/cafe-grader/cafe-grader-judge-scripts.git scripts
+git clone -q git://github.com/jittat/cafe-grader-judge-scripts.git scripts
 mkdir raw
 mkdir ev-exam
 mkdir ev
@@ -125,16 +142,12 @@ echo "require File.dirname(__FILE__) + \"/env_#{GRADER_ENV}.rb\"" >> scripts/con
 
 cd ..
 
-echo "Installing web server mongrel"
-
-sudo gem install mongrel --no-ri --no-rdoc
-
 echo "Now you are ready to run cafe grader...."
 echo 
 echo "Try:"
 echo
 echo "  cd web"
-echo "  ./script/server"
+echo "  rails s"
 echo
 echo "and access web at http://localhost:3000/"
 echo "The root username is 'root', its password is 'ioionrails'."
