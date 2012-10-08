@@ -106,7 +106,7 @@ echo "GRADER_ROOT_DIR = '$CAFE_PATH/judge'" >> config/initializers/cafe_grader_c
 echo "GRADING_RESULT_DIR = '$CAFE_PATH/judge/result'" >> config/initializers/cafe_grader_config.rb
 
 echo "Installing required gems"
-
+gem install bundler
 bundle install
 
 echo "Running rake tasks to initialize database"
