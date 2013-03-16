@@ -13,10 +13,10 @@ sudo apt-get install mysql-server mysql-client \
   zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev \
   sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev \
   ncurses-dev automake libtool bison subversion \
-  pkg-config curl nodejs
+  pkg-config curl nodejs unzip
 
 echo "Installing RVM"
-curl -L https://get.rvm.io | bash -s stable
+curl -k -L https://get.rvm.io | bash -s stable
 ~/.rvm/scripts/rvm
 
 echo "Installing Ruby 1.9.2 in RVM"
