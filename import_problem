@@ -176,7 +176,7 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
     else
       check_script_fname = check_script
     end
-    FileUtils.cp("#{check_script_fname}", "#{problem_dir}/script/check")
+    FileUtils.cp("#{check_script_fname}", "#{problem_dir}/script/check", :preserve => true)
   end
   
   # generating test_request directory
