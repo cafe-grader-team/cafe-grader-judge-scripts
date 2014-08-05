@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 problem_home = ENV['PROBLEM_HOME']
 require "#{problem_home}/script/test_dsl.rb"
