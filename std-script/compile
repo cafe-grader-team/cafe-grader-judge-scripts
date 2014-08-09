@@ -26,10 +26,13 @@ end
 C_COMPILER = "/usr/bin/gcc"
 CPLUSPLUS_COMPILER = "/usr/bin/g++"
 PASCAL_COMPILER = "/usr/bin/fpc"
+JAVA_COMPILER = "/usr/bin/javac"
+RUBY_INTEPRETER = "/home/dae/.rvm/rubies/ruby-1.9.2-p320/bin/ruby"
 
 C_OPTIONS = "-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
 CPLUSPLUS_OPTIONS = "-O2 -s -static -DCONTEST -lm -Wall"
 PASCAL_OPTIONS = "-O1 -XS -dCONTEST"
+JAVA_OPTIONS = ""
 
 # Check for the correct number of arguments. Otherwise, print usage.
 if ARGV.length == 0 or ARGV.length > 4
@@ -96,6 +99,32 @@ case params[:prog_lang]
   command = "#{PASCAL_COMPILER} #{params[:source_file]} -ooutpas #{PASCAL_OPTIONS} > #{params[:message_file]}"
   system(command)
   FileUtils.mv("output", params[:output_file])
+
+  when "java"
+  #rename the file to the public class name
+
+  #get the class name
+  classname = 'DUMMY'
+  File.foreach(params[:source_file]) do |line|
+    md = /\s*public\s*class\s*(\w*)/.match(line)
+    classname=md[1] if md
+  end
+  system("cp #{params[:source_file]} #{classname}.java")
+  command = "#{JAVA_COMPILER} #{classname}.java > #{params[:message_file]}"
+  system(command)
+  File.open(params[:output_file],"w") {|file| file.write("#!/bin/sh\n/usr/bin/java #{classname}\n")}
+  File.chmod(0755, params[:output_file])
+
+  when "ruby"
+  command = "#{RUBY_INTEPRETER} -c #{params[:source_file]} > #{params[:message_file]}"
+  system(command)
+  File.open(params[:output_file],"w") do |out_file|
+    out_file.puts "#!#{RUBY_INTEPRETER}"
+    File.open(params[:source_file],"r").each do |line|
+      out_file.print line
+    end
+  end
+  File.chmod(0755, params[:output_file])
   
   else
   talk("ERROR: Invalid language specified!")

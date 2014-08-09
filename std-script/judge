@@ -53,7 +53,7 @@ if ARGV.length < 2 || ARGV.length > 4
 end
 
 language = ARGV[0]
-if language != "c" && language != "c++" && language != "pas"
+if language != "c" && language != "c++" && language != "pas" && language != "java" && language != "ruby"
   log "You specified a language that is not supported: #{language}."
   exit(127)
 end
@@ -110,6 +110,7 @@ if !FileTest.exist?("a.out")
 else
   call_and_log("Cannot move the compiled program to #{test_result_dir}") {
     FileUtils.mv("a.out",test_result_dir)
+    if language == "java" then Dir["*.class"].each { |file| FileUtils.mv(file,test_result_dir)} end
   }
   FileUtils.rm_rf("#{sandbox_dir}/.")
 end
@@ -133,6 +134,7 @@ end
 
   call_and_log("Cannot copy the compiled program into #{sandbox_dir}") {
     FileUtils.cp("#{test_result_dir}/a.out", sandbox_dir, :preserve => true)
+    if language == "java" then Dir["#{test_result_dir}/*.class"].each { |file| FileUtils.cp(file,sandbox_dir)} end
   }
 
   begin
