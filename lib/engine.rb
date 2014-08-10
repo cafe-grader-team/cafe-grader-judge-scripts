@@ -73,6 +73,8 @@ module Grader
         # puts "PROBLEM DIR: #{problem_home}"
 
         if !FileTest.exist?(problem_home)
+          puts "PROBLEM DIR: #{problem_home}"
+          puts "No test data. (check problem dir)"
           raise "No test data."
         end
 
