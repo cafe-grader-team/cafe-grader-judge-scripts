@@ -11,14 +11,14 @@ require 'fileutils'
 #
 ##############################
 
-def talk(msg)
+def talk(str='')
   if ENV['TALKATIVE']!=nil
     puts str
   end
   if ENV['GRADER_LOGGING']!=nil
     log_fname = ENV['GRADER_LOGGING']
     fp = File.open(log_fname,"a")
-    fp.puts("run: #{Time.new.strftime("%H:%M")} #{msg}")
+    fp.puts("run: #{Time.new.strftime("%H:%M")} #{str}")
     fp.close
   end
 end
