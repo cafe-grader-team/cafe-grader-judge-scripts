@@ -358,7 +358,7 @@ def grader_grade_submissions(grader_proc, options)
     begin
       submission = Submission.find(sub_id.to_i)
     rescue ActiveRecord::RecordNotFound
-      puts "Record not found"
+      puts "Submission #{sub_id} not found"
       submission = nil
     end
 
