@@ -36,35 +36,35 @@ module Grader
       user = submission.user
       problem = submission.problem
 
-      # TODO: will have to create real exception for this
-      if user==nil or problem == nil
-        @reporter.report_error(submission,"Grading error: problem with submission")
-        #raise "engine: user or problem is nil"
-      end
-
-      # TODO: this is another hack so that output only task can be judged
-      if submission.language!=nil
-        language = submission.language.name
-        lang_ext = submission.language.ext
-      else
-        language = 'c'
-        lang_ext = 'c'
-      end
-
-      # This is needed because older version of std-scripts/compile
-      # only look for c++.
-      if language == 'cpp'
-        language = 'c++'
-      end
-
-      # COMMENT: should it be only source.ext?
-      if problem!=nil
-        source_name = "#{problem.name}.#{lang_ext}"
-      else
-        source_name = "source.#{lang_ext}"
-      end
-
       begin
+        # TODO: will have to create real exception for this
+        if user==nil or problem == nil
+          @reporter.report_error(submission,"Grading error: problem with submission")
+          raise "engine: user or problem is nil"
+        end
+
+        # TODO: this is another hack so that output only task can be judged
+        if submission.language!=nil
+          language = submission.language.name
+          lang_ext = submission.language.ext
+        else
+          language = 'c'
+          lang_ext = 'c'
+        end
+
+        # This is needed because older version of std-scripts/compile
+        # only look for c++.
+        if language == 'cpp'
+          language = 'c++'
+        end
+
+        # COMMENT: should it be only source.ext?
+        if problem!=nil
+          source_name = "#{problem.name}.#{lang_ext}"
+        else
+          source_name = "source.#{lang_ext}"
+        end
+
         grading_dir = @room_maker.produce_grading_room(submission)
         @room_maker.save_source(submission,source_name)
         problem_home = @room_maker.find_problem_home(submission)
@@ -74,8 +74,7 @@ module Grader
 
         if !FileTest.exist?(problem_home)
           puts "PROBLEM DIR: #{problem_home}"
-          puts "No test data. (check problem dir)"
-          raise "No test data."
+          raise "engine: No test data."
         end
 
         dinit = DirInit::Manager.new(problem_home)
@@ -97,6 +96,7 @@ module Grader
 
       rescue RuntimeError => msg
         @reporter.report_error(submission, msg)
+        puts "ERROR: #{msg}"
 
       ensure
         @room_maker.clean_up(submission)
@@ -131,7 +131,7 @@ module Grader
       script_dir = "#{problem_home}/script"
       std_script_dir = get_std_script_dir
 
-      raise "std-script directory not found" if !FileTest.exist?(std_script_dir)
+      raise "engine: std-script directory not found" if !FileTest.exist?(std_script_dir)
 
       scripts = Dir[std_script_dir + '/*']
       
