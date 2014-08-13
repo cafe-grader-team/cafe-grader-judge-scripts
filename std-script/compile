@@ -112,7 +112,7 @@ case params[:prog_lang]
   system("cp #{params[:source_file]} #{classname}.java")
   command = "#{JAVA_COMPILER} #{classname}.java 2> #{params[:message_file]}"
   system(command)
-  if File.exists?(classname + ".class") begin
+  if File.exists?(classname + ".class")
     File.open(params[:output_file],"w") {|file| file.write("#!/bin/sh\n/usr/bin/java #{classname}\n")}
     File.chmod(0755, params[:output_file])
   end
