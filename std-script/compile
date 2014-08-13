@@ -110,10 +110,12 @@ case params[:prog_lang]
     classname=md[1] if md
   end
   system("cp #{params[:source_file]} #{classname}.java")
-  command = "#{JAVA_COMPILER} #{classname}.java > #{params[:message_file]}"
+  command = "#{JAVA_COMPILER} #{classname}.java 2> #{params[:message_file]}"
   system(command)
-  File.open(params[:output_file],"w") {|file| file.write("#!/bin/sh\n/usr/bin/java #{classname}\n")}
-  File.chmod(0755, params[:output_file])
+  if File.exists?(classname + ".class") begin
+    File.open(params[:output_file],"w") {|file| file.write("#!/bin/sh\n/usr/bin/java #{classname}\n")}
+    File.chmod(0755, params[:output_file])
+  end
 
   when "ruby"
   command = "#{RUBY_INTEPRETER} -c #{params[:source_file]} > #{params[:message_file]}"
