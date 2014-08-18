@@ -114,6 +114,10 @@ echo "Running rake tasks to initialize database"
 rake db:migrate
 rake db:seed
 
+echo "Running rake tasks to precompile the assets"
+
+rake assets:precompile
+
 echo "Intalling web interface complete..."
 echo
 echo "Fetching grader"
