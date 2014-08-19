@@ -104,3 +104,5 @@ result_file.close
 comment_file = File.new("comment", "w")
 comment_file.write "#{all_comment}\n"
 comment_file.close
+
+log "score = #{all_score} comment = #{all_comment}"

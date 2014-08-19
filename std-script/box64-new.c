@@ -203,13 +203,13 @@ box_exit(int rc)
 	fprintf(stderr, "UGH: Lost track of the process (%m)\n");
       else {
 	final_stats(&rus);
-        print_running_stat(
-              (double)wall_ms/1000,
-              (double)total_ms/1000,
-              (double)sys_ms/1000,
-              (mem_peak_kb + 1023) / 1024);
       }
     }
+  print_running_stat(
+        (double)wall_ms/1000,
+        (double)total_ms/1000,
+        (double)sys_ms/1000,
+        (mem_peak_kb + 1023) / 1024);
   meta_close();
   exit(rc);
 }
