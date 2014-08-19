@@ -91,8 +91,14 @@ ENV['PROBLEM_HOME'] = nil
 
 case language
   when "java"
-    # for java, we have to add additional systemcall and we don't check the mem limit (dunno how to fix...)
-    run_command = "#{problem_home}/script/box -T -t #{time_limit} -s getppid -s clone -s wait4 -p /usr/bin/ -p ./ -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
+
+    # for java, extract the classname
+    # wne have to add additional systemcall and we don't check the mem limit (dunno how to fix...)
+    classname = 'DUMMY'
+    File.open(program_name,"r").each do |line|
+      classname = line
+    end
+    run_command = "#{problem_home}/script/box -T -t #{time_limit} -s getppid -s clone -s wait4 -p /usr/bin/ -p ./ -i #{input_file_name} -o output.txt /usr/bin/java #{classname} 2>run_result"
   when "ruby"
     run_command = "#{problem_home}/script/box -T -t #{time_limit} -s getppid -s wait4 -s clone -s set_robust_list -s futex -s sigaltstack -p /dev/urandom -p ./ -p /home/dae/.rvm/rubies/ruby-1.9.2-p320/ -p #{problem_home}/ -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
   when "python"

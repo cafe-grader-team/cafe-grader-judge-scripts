@@ -116,8 +116,10 @@ when "java"
   command = "#{JAVA_COMPILER} #{classname}.java 2> #{params[:message_file]}"
   system(command)
   if File.exists?(classname + ".class")
-    File.open(params[:output_file],"w") {|file| file.write("#!/bin/sh\n/usr/bin/java #{classname}\n")}
-    File.chmod(0755, params[:output_file])
+    File.open(params[:output_file],"w") {|file| file.write("#{classname}")}
+  end
+  if classname == 'DUMMY'
+    File.open(params[:message_file],"w") {|file| file.write("Cannot find any public class in the source code\n")}
   end
 
 when "ruby"
