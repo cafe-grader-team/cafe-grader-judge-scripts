@@ -15,9 +15,8 @@ def log(str='')
 end
 
 def extract_time(t)
-  #puts "TIME: #{t}"
-  #if (result=/^(.*)real(.*)wall(.*)s/.match(t))
-  if (result=/^OK \((.*) sec real\, (.*) sec wall,.*MB, (.*) syscalls/.match(t))
+  #  puts "TIME: #{t}"
+  if (result=/^(.*)r(.*)u(.*)s/.match(t))
     {:real => result[1], :user => result[2], :sys => result[3]}
   else
     #{:real => 0, :user => 0, :sys => 0}
