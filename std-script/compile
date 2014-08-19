@@ -27,7 +27,7 @@ C_COMPILER = "/usr/bin/gcc"
 CPLUSPLUS_COMPILER = "/usr/bin/g++"
 PASCAL_COMPILER = "/usr/bin/fpc"
 JAVA_COMPILER = "/usr/bin/javac"
-RUBY_INTERPRETER = "/home/dae/.rvm/rubies/ruby-1.9.2-p320/bin/ruby"
+RUBY_INTERPRETER = "/usr/bin/ruby"
 PYTHON_INTERPRETER = "/usr/bin/python"
 PYTHON_CHECKER = "/usr/bin/pyflakes"
 
@@ -121,15 +121,16 @@ when "java"
   end
 
 when "ruby"
-  command = "#{RUBY_INTERPRETER} -c #{params[:source_file]} > #{params[:message_file]}"
-  system(command)
-  File.open(params[:output_file],"w") do |out_file|
-    out_file.puts "#!#{RUBY_INTERPRETER}"
-    File.open(params[:source_file],"r").each do |line|
-      out_file.print line
+  command = "#{RUBY_INTERPRETER} -c #{params[:source_file]} 2> #{params[:message_file]}"
+  if system(command)
+    File.open(params[:output_file],"w") do |out_file|
+      out_file.puts "#!#{RUBY_INTERPRETER}"
+      File.open(params[:source_file],"r").each do |line|
+        out_file.print line
+      end
     end
+    File.chmod(0755, params[:output_file])
   end
-  File.chmod(0755, params[:output_file])
 
 when "python"
   command = "#{PYTHON_CHECKER} #{params[:source_file]} > #{params[:message_file]}"
