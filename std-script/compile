@@ -27,12 +27,15 @@ C_COMPILER = "/usr/bin/gcc"
 CPLUSPLUS_COMPILER = "/usr/bin/g++"
 PASCAL_COMPILER = "/usr/bin/fpc"
 JAVA_COMPILER = "/usr/bin/javac"
-RUBY_INTEPRETER = "/home/dae/.rvm/rubies/ruby-1.9.2-p320/bin/ruby"
+RUBY_INTERPRETER = "/home/dae/.rvm/rubies/ruby-1.9.2-p320/bin/ruby"
+PYTHON_INTERPRETER = "/usr/bin/python"
+PYTHON_CHECKER = "/usr/bin/pyflakes"
 
 C_OPTIONS = "-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
 CPLUSPLUS_OPTIONS = "-O2 -s -static -DCONTEST -lm -Wall"
 PASCAL_OPTIONS = "-O1 -XS -dCONTEST"
 JAVA_OPTIONS = ""
+PYTHON_OPTIONS = ""
 
 # Check for the correct number of arguments. Otherwise, print usage.
 if ARGV.length == 0 or ARGV.length > 4
@@ -87,20 +90,20 @@ end
 # Compile.
 case params[:prog_lang]
 
-  when "c"
+when "c"
   command = "#{C_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{C_OPTIONS} 2> #{params[:message_file]}"
   system(command)
 
-  when "c++"
+when "c++"
   command = "#{CPLUSPLUS_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{CPLUSPLUS_OPTIONS} 2> #{params[:message_file]}"
   system(command)
   
-  when "pas"
+when "pas"
   command = "#{PASCAL_COMPILER} #{params[:source_file]} -ooutpas #{PASCAL_OPTIONS} > #{params[:message_file]}"
   system(command)
   FileUtils.mv("output", params[:output_file])
 
-  when "java"
+when "java"
   #rename the file to the public class name
 
   #get the class name
@@ -117,18 +120,33 @@ case params[:prog_lang]
     File.chmod(0755, params[:output_file])
   end
 
-  when "ruby"
-  command = "#{RUBY_INTEPRETER} -c #{params[:source_file]} > #{params[:message_file]}"
+when "ruby"
+  command = "#{RUBY_INTERPRETER} -c #{params[:source_file]} > #{params[:message_file]}"
   system(command)
   File.open(params[:output_file],"w") do |out_file|
-    out_file.puts "#!#{RUBY_INTEPRETER}"
+    out_file.puts "#!#{RUBY_INTERPRETER}"
     File.open(params[:source_file],"r").each do |line|
       out_file.print line
     end
   end
   File.chmod(0755, params[:output_file])
+
+when "python"
+  command = "#{PYTHON_CHECKER} #{params[:source_file]} > #{params[:message_file]}"
+  if system(command)
+    #compile to python bytecode
+    command = "#{PYTHON_INTERPRETER} -m py_compile #{params[:source_file]}"
+    puts "compile: #{command}"
+    system(command)
+    puts "pwd: " + Dir.pwd
+    Dir.new('.').each {|file| puts file}
+    File.open(params[:output_file],"w") do |out_file|
+      out_file.puts "#!#{PYTHON_INTERPRETER} #{params[:source_file]}c"
+    end
+    File.chmod(0755, params[:output_file])
+  end
   
-  else
+else
   talk("ERROR: Invalid language specified!")
   open(params[:message_file],"w") do |f|
     f.puts "ERROR: Invalid language specified!"
