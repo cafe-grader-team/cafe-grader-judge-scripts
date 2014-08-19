@@ -15,9 +15,8 @@ def log(str='')
 end
 
 def extract_time(t)
-  #puts "TIME: #{t}"
-  #if (result=/^(.*)real(.*)wall(.*)s/.match(t))
-  if (result=/^OK \((.*) sec real\, (.*) sec wall,.*MB, (.*) syscalls/.match(t))
+  #  puts "TIME: #{t}"
+  if (result=/^(.*)r(.*)u(.*)s/.match(t))
     {:real => result[1], :user => result[2], :sys => result[3]}
   else
     #{:real => 0, :user => 0, :sys => 0}
@@ -92,13 +91,20 @@ ENV['PROBLEM_HOME'] = nil
 
 case language
   when "java"
-    # for java, we have to add additional systemcall and we don't check the mem limit (dunno how to fix...)
-    run_command = "#{problem_home}/script/box -T -t #{time_limit} -s getppid -s clone -s wait4 -p /usr/bin/ -p ./ -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
+
+    # for java, extract the classname
+    # wne have to add additional systemcall and we don't check the mem limit (dunno how to fix...)
+    classname = 'DUMMY'
+    File.open(program_name,"r").each do |line|
+      classname = line
+    end
+    run_command = "#{problem_home}/script/box -T -t #{time_limit} -s getppid -s clone -s wait4 -p /usr/bin/ -p ./ -i #{input_file_name} -o output.txt /usr/bin/java #{classname} 2>run_result"
   when "ruby"
     run_command = "#{problem_home}/script/box -T -t #{time_limit} -s getppid -s wait4 -s clone -s set_robust_list -s futex -s sigaltstack -p /dev/urandom -p ./ -p /home/dae/.rvm/rubies/ruby-1.9.2-p320/ -p #{problem_home}/ -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
-  when "c++"
-    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
-  else
+  when "python"
+    #this code just run without any checking
+    run_command = "#{problem_home}/script/box -T -t #{time_limit} -p #{problem_home}/ -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
+  else # for c++, pascal, we do the normal checking
     run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
 end
 
