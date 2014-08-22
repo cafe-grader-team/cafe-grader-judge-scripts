@@ -37,6 +37,18 @@ echo "Configuring rails app"
 cp web/config/application.rb.SAMPLE web/config/application.rb
 cp web/config/initializers/cafe_grader_config.rb.SAMPLE web/config/initializers/cafe_grader_config.rb
 
+#replace UTC in application.rb with the system timezone
+timezone='UTC'
+if [ -f '/etc/timezone' ]; then
+  timezone=\"`cat /etc/timezone`\"
+else
+  if [ -f '/etc/sysconfig/clock' ]; then
+    timezone=`grep -e '^TIMEZONE' /etc/sysconfig/clock | grep -o -e '\".*\"'`
+  fi
+fi
+replace="s!'UTC'!$timezone!g"
+sed -i $replace web/config/application.rb
+
 echo "At this point we will need MySQL user and database."
 echo "Have you created MySQL user and database for Cafe grader? (Y/N) "
 read ch
