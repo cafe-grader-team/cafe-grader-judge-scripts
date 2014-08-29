@@ -1456,11 +1456,6 @@ boxkeeper(void)
 	    err("TO: Time limit exceeded (wall clock)");
 	  flush_line();
     fprintf(stderr,"OK\n");
-        print_running_stat(
-              (double)wall_ms/1000,
-              (double)total_ms/1000,
-              (double)sys_ms/1000,
-              (mem_peak_kb + 1023) / 1024);
 	  box_exit(0);
 	}
       if (WIFSIGNALED(stat))
