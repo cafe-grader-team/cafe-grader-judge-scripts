@@ -147,6 +147,7 @@ when "python"
       out_file.puts "#!#{PYTHON_INTERPRETER} #{params[:source_file]}c"
     end
     File.chmod(0755, params[:output_file])
+    FileUtils.cp("#{params[:source_file]}c",params[:output_file])
   end
   
 else

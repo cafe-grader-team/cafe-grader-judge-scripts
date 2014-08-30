@@ -43,9 +43,12 @@ else
 end
 
 problem_home = ENV['PROBLEM_HOME']
+source_name = ENV['SOURCE_NAME']
 require "#{problem_home}/script/test_dsl.rb"
 load "#{problem_home}/test_cases/all_tests.cfg"
 problem = Problem.get_instance
+
+sandbox_dir = Dir.getwd
 
 if problem.well_formed? == false
   log "The problem specification is not well formed."
@@ -81,29 +84,30 @@ end
 
 # Hide PROBLEM_HOME
 ENV['PROBLEM_HOME'] = nil
+ENV['SOURCE_NAME'] = nil
 
 # Run the program.
 #run_command = "/usr/bin/time -f \"#{time_output_format}\" 2>run_result #{problem_home}/script/box_new -a 2 -f -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name}"
 #
 
-
-
+JAVA_OPTION = "-s set_robust_list -s futex -s clone -s getppid -s clone -s wait4 -p /usr/bin/ -p ./"
+RUBY_OPTION = "-p /usr/lib64/ -p /lib64/ -p /dev/urandom -p #{sandbox_dir}/#{program_name} -s set_robust_list -s sched_getaffinity -s clock_gettime -s sigaltstack -s pipe2 -s clone -s futex -s openat"
+PYTHON_OPTION = "-p /usr/lib64/ -p /lib64/ -p /usr/bin/ -p /usr/local/lib64/ -p /usr/local/lib/ -p #{sandbox_dir}/#{program_name} -p ./#{program_name} -p #{sandbox_dir}/#{source_name} -s set_robust_list -s openat -s recvmsg -s connect -s socket -s sendto -E PYTHONNOUSERSITE=yes"
 
 case language
   when "java"
-
     # for java, extract the classname
     # wne have to add additional systemcall and we don't check the mem limit (dunno how to fix...)
     classname = 'DUMMY'
     File.open(program_name,"r").each do |line|
       classname = line
     end
-    run_command = "#{problem_home}/script/box -T -t #{time_limit} -s getppid -s clone -s wait4 -p /usr/bin/ -p ./ -i #{input_file_name} -o output.txt /usr/bin/java #{classname} 2>run_result"
+    #for java, we cannot really check the memory limit...
+    run_command = "#{problem_home}/script/box -a 3 -f -T -t #{time_limit} #{JAVA_OPTION} -i #{input_file_name} -o output.txt /usr/bin/java #{classname} 2>run_result"
   when "ruby"
-    run_command = "#{problem_home}/script/box -T -t #{time_limit} -s getppid -s wait4 -s clone -s set_robust_list -s futex -s sigaltstack -p /dev/urandom -p ./ -p /home/dae/.rvm/rubies/ruby-1.9.2-p320/ -p #{problem_home}/ -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit} -m #{mem_limit} #{RUBY_OPTION} -i #{input_file_name} -o output.txt /usr/bin/ruby #{program_name} 2>run_result"
   when "python"
-    #this code just run without any checking
-    run_command = "#{problem_home}/script/box -T -t #{time_limit} -p #{problem_home}/ -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit} -m #{mem_limit} #{PYTHON_OPTION} -i #{input_file_name} -o output.txt /usr/bin/python #{program_name} 2>run_result"
   else # for c++, pascal, we do the normal checking
     run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
 end
@@ -111,7 +115,7 @@ end
 
 log "Running test #{test_num}..."
 log run_command
-log 
+log
 system(run_command)
 
 # Restore PROBLEM_HOME
@@ -153,6 +157,7 @@ report = lambda{ |status, points, comment|
   log "Done!"
   exit(0)  
 }
+
 
 if run_result[0][0,2] != "OK"
   log "There was a runtime error."
