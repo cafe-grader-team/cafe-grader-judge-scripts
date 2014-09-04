@@ -32,7 +32,7 @@ PYTHON_INTERPRETER = "/usr/bin/python"
 PYTHON_CHECKER = "/usr/bin/pyflakes"
 
 C_OPTIONS = "-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
-CPLUSPLUS_OPTIONS = "-O2 -s -static -DCONTEST -lm -Wall"
+CPLUSPLUS_OPTIONS = "-O2 -s -std=c++11 -static -DCONTEST -lm -Wall"
 PASCAL_OPTIONS = "-O1 -XS -dCONTEST"
 JAVA_OPTIONS = ""
 PYTHON_OPTIONS = ""
