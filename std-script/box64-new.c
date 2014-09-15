@@ -160,7 +160,7 @@ static void print_running_stat(double wall_time,
   //total is user
   //wall is wall
   //
-  fprintf(stderr,"%.4lfr%.4lfu%.4lfs%dm\n", 
+  fprintf(stderr,"%.4lfr%.4lfu%.4lfs%dkbytes\n", 
 	  wall_time, user_time, system_time, mem_usage);
 }
 
@@ -209,7 +209,7 @@ box_exit(int rc)
         (double)wall_ms/1000,
         (double)total_ms/1000,
         (double)sys_ms/1000,
-        (mem_peak_kb + 1023) / 1024);
+        mem_peak_kb);
   meta_close();
   exit(rc);
 }

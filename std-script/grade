@@ -33,7 +33,7 @@ end
 
 def extract_time(t)
   puts "TIME: #{t}"
-  if (result=/^(.*)r(.*)u(.*)s(.*)m/.match(t))
+  if (result=/^(.*)r(.*)u(.*)s(.*)kbytes/.match(t))
     {:real => result[1], :user => result[2], :sys => result[3], :mem => result[4]}
   else
     #{:real => 0, :user => 0, :sys => 0}
