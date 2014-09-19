@@ -30,12 +30,14 @@ JAVA_COMPILER = "/usr/bin/javac"
 RUBY_INTERPRETER = "/usr/bin/ruby"
 PYTHON_INTERPRETER = "/usr/bin/python"
 PYTHON_CHECKER = "/usr/bin/pyflakes"
+PHP_INTERPRETER = "/usr/bin/php"
 
 C_OPTIONS = "-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
 CPLUSPLUS_OPTIONS = "-O2 -s -std=c++11 -static -DCONTEST -lm -Wall"
 PASCAL_OPTIONS = "-O1 -XS -dCONTEST"
 JAVA_OPTIONS = ""
 PYTHON_OPTIONS = ""
+PHP_OPTIONS = "-l"
 
 # Check for the correct number of arguments. Otherwise, print usage.
 if ARGV.length == 0 or ARGV.length > 4
@@ -149,7 +151,19 @@ when "python"
     File.chmod(0755, params[:output_file])
     FileUtils.cp("#{params[:source_file]}c",params[:output_file])
   end
-  
+
+when "php"
+  command = "#{PHP_INTERPRETER} #{PHP_OPTIONS} #{params[:source_file]} 2> #{params[:message_file]}"
+  if system(command)
+    File.open(params[:output_file],"w") do |out_file|
+      out_file.puts "#!#{PHP_INTERPRETER}"
+      File.open(params[:source_file],"r").each do |line|
+        out_file.print line
+      end
+    end
+    File.chmod(0755, params[:output_file])
+  end
+
 else
   talk("ERROR: Invalid language specified!")
   open(params[:message_file],"w") do |f|
