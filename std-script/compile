@@ -110,11 +110,18 @@ when "java"
 
   #get the class name
   classname = 'DUMMY'
+  source = Array.new
   File.foreach(params[:source_file]) do |line|
     md = /\s*public\s*class\s*(\w*)/.match(line)
     classname=md[1] if md
+    source << line unless line =~ /\s*package\s*\w+\s*\;/
   end
-  system("cp #{params[:source_file]} #{classname}.java")
+  File.open("#{classname}.java","w") do |file|
+    source.each do |s|
+      file.puts s
+    end
+  end
+  #system("cp #{params[:source_file]} #{classname}.java")
   command = "#{JAVA_COMPILER} #{classname}.java 2> #{params[:message_file]}"
   system(command)
   if File.exists?(classname + ".class")
