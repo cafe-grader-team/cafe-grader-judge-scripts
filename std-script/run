@@ -106,11 +106,11 @@ case language
     #for java, we cannot really check the memory limit...
     run_command = "#{problem_home}/script/box -a 3 -f -T -t #{time_limit} #{JAVA_OPTION} -i #{input_file_name} -o output.txt /usr/bin/java #{classname} 2>run_result"
   when "ruby"
-    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*2} -m #{mem_limit} #{RUBY_OPTION} -i #{input_file_name} -o output.txt /usr/bin/ruby #{program_name} 2>run_result"
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{mem_limit} #{RUBY_OPTION} -i #{input_file_name} -o output.txt /usr/bin/ruby #{program_name} 2>run_result"
   when "python"
-    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*2} -m #{mem_limit} #{PYTHON_OPTION} -i #{input_file_name} -o output.txt /usr/bin/python #{program_name} 2>run_result"
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{mem_limit} #{PYTHON_OPTION} -i #{input_file_name} -o output.txt /usr/bin/python #{program_name} 2>run_result"
   when "php"
-    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*2} #{PHP_OPTION} -i #{input_file_name} -o output.txt /usr/bin/php #{program_name} 2>run_result"
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} #{PHP_OPTION} -i #{input_file_name} -o output.txt /usr/bin/php #{program_name} 2>run_result"
   else # for c++, pascal, we do the normal checking
     run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
 end
