@@ -46,11 +46,22 @@ def display_manual
   puts <<USAGE
 Grader.
 using: (1) grader 
-       (2) grader environment [mode]
+       (2) grader environment [mode] [options]
        (3) grader stop [all|pids-list]
        (4) grader --help
 (1) call grader with environment = 'exam', mode = 'queue'
 (2) possible modes are: 'queue', 'test_request', 'prob', 'sub', 'contest', and 'autonew'
+  queue: repeatedly check the task queue and grade any available tasks
+
+  prob:  re-grade every user latest submission of the specific problem.
+         the problem name must be specified by the next argument.
+
+         additional options:
+
+            --all-sub    re-grade every submissions instead of just the latest submission of each user.
+  sub:   re-grader the specified submission.
+         The submission ID to be re-graded must be specified by the next argument.
+
 (3) create stop-file to stop running grader in queue mode
 (4) You are here.
 USAGE
@@ -105,6 +116,8 @@ def process_options_and_stop_file
     if ARGV.length >=1
       options[:mode] = ARGV.shift
     end
+  else
+    puts 'no argument specified, using default mode and environment.'
   end
 
   options[:dry_run] = (ARGV.delete('--dry') != nil)
@@ -118,6 +131,8 @@ def process_options_and_stop_file
     puts "Report currently works only for 'prob' or 'contest' modes."
     exit(0)
   end
+
+  options[:all_sub] = (ARGV.delete('--all-sub') != nil)
 
   return options
 end
@@ -295,7 +310,7 @@ def grader_grade_problems(grader_proc, options)
     if prob==nil
       puts "cannot find problem: #{prob_name}"
     else
-      runner.grade_problem(prob)
+      runner.grade_problem(prob,options)
     end
   end
 
@@ -378,6 +393,7 @@ grader_mode = options[:mode]
 dry_run = options[:dry_run]
 
 puts "environment: #{GRADER_ENV}"
+puts "grader mode: #{grader_mode}"
 require File.join(File.dirname(__FILE__),'config/environment')
 
 # add grader_mode to config

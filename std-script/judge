@@ -53,12 +53,13 @@ if ARGV.length < 2 || ARGV.length > 4
 end
 
 language = ARGV[0]
-if language != "c" && language != "c++" && language != "pas" && language != "java" && language != "ruby" && language != "python"
+if language != "c" && language != "c++" && language != "pas" && language != "java" && language != "ruby" && language != "python" && language != "php"
   log "You specified a language that is not supported: #{language}."
   exit(127)
 end
 
 source_file = ARGV[1]
+ENV['SOURCE_NAME'] = source_file
 if File.exist?(source_file) == false
   log "The source file does not exist."
   exit(127)
@@ -140,7 +141,7 @@ end
   }
 
   begin
-    execute("#{problem_home}/script/run #{language} #{test_num}", "Error occured during execution of the run script")
+    execute("#{problem_home}/script/run #{language} #{test_num} ", "Error occured during execution of the run script")
   rescue
     # do nothing
   end
