@@ -429,7 +429,7 @@ if options[:err_log]
   err_file_name = log_file_name + '.err'
   $stderr.reopen(err_file_name,"a")
   log "STDERR log to file [#{err_file_name}]"
-  warn "start logging for grader PID #{Process.id} on #{Time.now.in_time_zone}"
+  warn "start logging for grader PID #{Process.pid} on #{Time.now.in_time_zone}"
 end
 
 
