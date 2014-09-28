@@ -45,7 +45,7 @@ module Grader
     end
 
     def grade_submission(submission)
-      puts "Submission: #{submission.id} by #{submission.user.full_name}"
+      puts "Submission: #{submission.id} by #{submission.try(:user).try(:full_name)}"
       @engine.grade(submission)
     end
 
