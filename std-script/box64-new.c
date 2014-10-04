@@ -1656,6 +1656,8 @@ Options:\n\
 -w <time>\tSet wall clock time limit (seconds, fractions allowed)\n\
 -x <time>\tSet extra timeout, before which a timing-out program is not yet killed,\n\
 \t\tso that its real execution time is reported (seconds, fractions allowed)\n\
+-A <opt>\tPass <opt> as additional argument to the <command>\n\
+\t\tBe noted that this option will be appended after <arguments> respectively\n\
 ");
   exit(2);
 }
@@ -1665,8 +1667,10 @@ main(int argc, char **argv)
 {
   int c;
   uid_t uid;
+  char **prog_argv = xmalloc(sizeof(char*) * argc);
+  int prog_argc = 0;
 
-  while ((c = getopt(argc, argv, "a:c:eE:fi:k:m:M:o:p:r:s:t:Tvw:x:")) >= 0)
+  while ((c = getopt(argc, argv, "a:c:eE:fi:k:m:M:o:p:r:s:t:Tvw:x:A:")) >= 0)
     switch (c)
       {
       case 'a':
@@ -1725,6 +1729,9 @@ main(int argc, char **argv)
 	break;
       case 'x':
 	extra_timeout = 1000*atof(optarg);
+      case 'A':
+  prog_argv[prog_argc++] = strdup(optarg);
+  break;
 	break;
       default:
 	usage();
@@ -1739,9 +1746,15 @@ main(int argc, char **argv)
   box_pid = fork();
   if (box_pid < 0)
     die("fork: %m");
-  if (!box_pid)
-    box_inside(argc-optind, argv+optind);
-  else
+  if (!box_pid) {
+    int real_argc = prog_argc + argc - optind;
+    char **real_argv = xmalloc(sizeof(char*) * (real_argc));
+    for (int i = 0;i < argc-optind;i++)
+      real_argv[i] = strdup(argv[i+optind]);
+    for (int i = 0;i < prog_argc;i++)
+      real_argv[argc - optind + i] = strdup(prog_argv[i]);
+    box_inside(real_argc, real_argv);
+  } else
     boxkeeper();
   die("Internal error: fell over edge of the world");
 }
