@@ -129,5 +129,6 @@ File.open("run_stat","w") do |file|
   file.puts peak_memory
 end
 
+puts "#{all_score} #{all_comment}"
 log "score = #{all_score}\ncomment = #{all_comment}"
 log "max_runtime = #{max_runtime}\npeak_memory = #{peak_memory}"

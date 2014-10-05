@@ -111,7 +111,8 @@ when "java"
   #get the class name
   classname = 'DUMMY'
   source = Array.new
-  File.foreach(params[:source_file]) do |line|
+  File.foreach(params[:source_file],'r:UTF-8') do |line|
+    line.encode!('UTF-8','UTF-8',invalid: :replace, replace: '')
     md = /\s*public\s*class\s*(\w*)/.match(line)
     classname=md[1] if md
     source << line unless line =~ /\s*package\s*\w+\s*\;/
@@ -122,7 +123,7 @@ when "java"
     end
   end
   #system("cp #{params[:source_file]} #{classname}.java")
-  command = "#{JAVA_COMPILER} #{classname}.java"
+  command = "#{JAVA_COMPILER} -encoding utf8 #{classname}.java"
   system(command, err: params[:message_file])
   if File.exists?(classname + ".class")
     File.open(params[:output_file],"w") {|file| file.write("#{classname}")}
