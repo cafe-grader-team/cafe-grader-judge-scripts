@@ -2,7 +2,8 @@
 
 echo "This script will install and configure Cafe grader."
 
-echo "This will install Ruby 2.1.2 under rvm"
+$RUBY_VERSION="2.2.0"
+echo "This will install Ruby $RUBY_VERSION under RVM"
 
 echo "Installing required apts"
 
@@ -19,10 +20,10 @@ echo "Installing RVM"
 curl -k -L https://get.rvm.io | bash -s stable
 ~/.rvm/scripts/rvm
 
-echo "Installing Ruby 2.1.2 in RVM"
+echo "Installing Ruby $RUBY_VERSION in RVM"
 
-rvm install 2.1.2
-rvm use 2.1.2
+rvm install $RUBY_VERSION
+rvm use $RUBY_VERSION
 
 echo "Fetching Cafe Grader from Git repositories"
 
