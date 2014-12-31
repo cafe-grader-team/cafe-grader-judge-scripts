@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 # new_problem:
 #  * creates a directory for a problem in the current directory,
