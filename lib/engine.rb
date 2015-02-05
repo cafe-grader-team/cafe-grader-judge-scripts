@@ -118,8 +118,10 @@ module Grader
       
       talk grading_dir
       Dir.chdir grading_dir
-      cmd = "#{problem_home}/script/judge #{language} #{fname}"
+      script_name = "#{problem_home}/script/judge"
+      cmd = "#{script_name} #{language} #{fname}"
       talk "CMD: #{cmd}"
+      warn "ERROR: file does not exists #{script_name}" unless File.exists? script_name
       system(cmd)
     end
 
