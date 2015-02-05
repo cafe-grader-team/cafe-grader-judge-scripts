@@ -31,6 +31,17 @@ def char_comment(comment)
   end
 end
 
+def extract_time(t)
+  #puts "TIME: #{t}"
+  if (result=/^(.*)r(.*)u(.*)s(.*)kbytes/.match(t))
+    {:real => result[1], :user => result[2], :sys => result[3], :mem => result[4]}
+  else
+    #{:real => 0, :user => 0, :sys => 0}
+    #puts "ERROR READING RUNNING TIME: #{t}"
+    raise "Error reading running time: #{t}"
+  end
+end
+
 problem_home = ENV['PROBLEM_HOME']
 require "#{problem_home}/script/test_dsl.rb"
 load "#{problem_home}/test_cases/all_tests.cfg"
@@ -43,6 +54,8 @@ end
 
 all_score = 0
 all_comment = ''
+peak_memory = -1
+max_runtime = -1
 (1..(problem.runs.length-1)).each do |k|
   log "grade run #{k}"
   run = problem.runs[k]
@@ -58,10 +71,15 @@ all_comment = ''
     else
       result_file = File.new(result_file_name, "r")
       result_file_lines = result_file.readlines
-      if result_file_lines.length>=2
+      if result_file_lines.length>=3
         current_run_score = result_file_lines[1].to_i
         run_comment += result_file_lines[0]
         run_comment_short += char_comment(result_file_lines[0].chomp)
+
+        #update max runtime & memory
+        run_stat = extract_time result_file_lines[2]
+        peak_memory = [peak_memory,run_stat[:mem].to_i].max
+        max_runtime = [max_runtime,run_stat[:user].to_f + run_stat[:sys].to_f].max
       else
         current_run_score = 0
         run_comment += "result file for test #{test_num} error\n"
@@ -104,3 +122,13 @@ result_file.close
 comment_file = File.new("comment", "w")
 comment_file.write "#{all_comment}\n"
 comment_file.close
+
+
+File.open("run_stat","w") do |file|
+  file.puts max_runtime
+  file.puts peak_memory
+end
+
+puts "#{all_score} #{all_comment}"
+log "score = #{all_score}\ncomment = #{all_comment}"
+log "max_runtime = #{max_runtime}\npeak_memory = #{peak_memory}"

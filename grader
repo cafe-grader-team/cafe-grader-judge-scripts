@@ -57,10 +57,13 @@ using: (1) grader
          the problem name must be specified by the next argument.
 
          additional options:
-
             --all-sub    re-grade every submissions instead of just the latest submission of each user.
+
   sub:   re-grader the specified submission.
          The submission ID to be re-graded must be specified by the next argument.
+
+  options:
+    --err-log   log error to a file in the log dir
 
 (3) create stop-file to stop running grader in queue mode
 (4) You are here.
@@ -133,6 +136,8 @@ def process_options_and_stop_file
   end
 
   options[:all_sub] = (ARGV.delete('--all-sub') != nil)
+
+  options[:err_log] = (ARGV.delete('--err-log') != nil)
 
   return options
 end
@@ -420,6 +425,13 @@ end
 
 #set loggin environment
 ENV['GRADER_LOGGING'] = log_file_name
+if options[:err_log]
+  err_file_name = log_file_name + '.err'
+  $stderr.reopen(err_file_name,"a")
+  log "STDERR log to file [#{err_file_name}]"
+  warn "start logging for grader PID #{Process.pid} on #{Time.now.in_time_zone}"
+end
+
 
 # register exit handler to report inactive, and terminated
 at_exit do

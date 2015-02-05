@@ -2,7 +2,7 @@
 
 echo "This script will install and configure Cafe grader."
 
-$RUBY_VERSION="2.2.0"
+$RUBY_VERSION="2.1.2"
 echo "This will install Ruby $RUBY_VERSION under RVM"
 
 echo "Installing required apts"
@@ -14,11 +14,11 @@ sudo apt-get install mysql-server mysql-client \
   zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev \
   sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev \
   ncurses-dev automake libtool bison subversion \
-  pkg-config curl nodejs unzip
+  pkg-config curl nodejs unzip pyflakes ruby default-jdk
 
 echo "Installing RVM"
 curl -k -L https://get.rvm.io | bash -s stable
-~/.rvm/scripts/rvm
+source ~/.rvm/scripts/rvm
 
 echo "Installing Ruby $RUBY_VERSION in RVM"
 
@@ -156,6 +156,15 @@ echo "RAILS_ROOT = '$CAFE_PATH/web'" > scripts/config/environment.rb
 echo "GRADER_ROOT = '$CAFE_PATH/judge/scripts'" >> scripts/config/environment.rb
 echo "require File.join(File.dirname(__FILE__),'../lib/boot')" >> scripts/config/environment.rb
 echo "require File.dirname(__FILE__) + \"/env_#{GRADER_ENV}.rb\"" >> scripts/config/environment.rb
+
+# compiling box
+MACHINE_TYPE=`uname -m`
+if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+  gcc -std=c99 -o scripts/std-script/box scripts/std-script/box64-new.c
+else
+  g++ -o scripts/std-script/box scripts/std-script/box.cc
+fi
+
 
 cd ..
 

@@ -65,7 +65,8 @@ module Grader
       end
       
       result_fname = "#{test_result_dir}/result"
-      comment_fname = "#{test_result_dir}/comment"  
+      comment_fname = "#{test_result_dir}/comment"
+      runstat_fname = "#{test_result_dir}/run_stat"
       if FileTest.exist?(result_fname)
         comment = ""
         begin
@@ -85,9 +86,22 @@ module Grader
           comment += ""
         end
 
-        return {:points => result, 
-          :comment => comment, 
-          :cmp_msg => cmp_msg}
+        begin
+          runstat_file = File.open(runstat_fname)
+          max_runtime = runstat_file.readline.to_f
+          peak_memory = runstat_file.readline.to_i
+        rescue
+          max_runtime = -1
+          peak_memory = -1
+        end
+
+
+        return {points: result,
+          comment: comment,
+          cmp_msg: cmp_msg,
+          max_runtime: max_runtime,
+          peak_memory: peak_memory
+        }
       else
         if FileTest.exist?("#{test_result_dir}/a.out")
           return {:points => 0,
@@ -107,6 +121,10 @@ module Grader
       points = result[:points]
       submission.points = points
       comment = @config.report_comment(result[:comment])
+
+      submission.peak_memory = result[:peak_memory]
+      submission.max_runtime =  result[:max_runtime]
+      submission.effective_code_length =submission.source.length
 
       #
       # TODO: FIX THIS MESSAGE
