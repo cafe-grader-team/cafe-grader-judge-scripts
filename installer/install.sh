@@ -156,6 +156,17 @@ echo "GRADER_ROOT = '$CAFE_PATH/judge/scripts'" >> scripts/config/environment.rb
 echo "require File.join(File.dirname(__FILE__),'../lib/boot')" >> scripts/config/environment.rb
 echo "require File.dirname(__FILE__) + \"/env_#{GRADER_ENV}.rb\"" >> scripts/config/environment.rb
 
+# compiling box
+MACHINE_TYPE=`uname -m`
+if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+  gcc -std=c99 -o scripts/std-script/box scripts/std-script/box64-new.c
+  # 64-bit stuff here
+else
+  g++ -o scripts/std-script/box scripts/std-script/box.cc
+  # 32-bit stuff here
+fi
+
+
 cd ..
 
 echo "Now you are ready to run cafe grader...."
