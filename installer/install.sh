@@ -13,16 +13,16 @@ sudo apt-get install mysql-server mysql-client \
   zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev \
   sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev \
   ncurses-dev automake libtool bison subversion \
-  pkg-config curl nodejs unzip
+  pkg-config curl nodejs unzip pyflakes ruby
 
 echo "Installing RVM"
 curl -k -L https://get.rvm.io | bash -s stable
-~/.rvm/scripts/rvm
+source ~/.rvm/scripts/rvm
 
-echo "Installing Ruby 1.9.2 in RVM"
+echo "Installing Ruby 2.1.2 in RVM"
 
-rvm install 1.9.2
-rvm use 1.9.2
+rvm install 2.1.2
+rvm use 2.1.2
 
 echo "Fetching Cafe Grader from Git repositories"
 
