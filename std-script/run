@@ -43,9 +43,12 @@ else
 end
 
 problem_home = ENV['PROBLEM_HOME']
+source_name = ENV['SOURCE_NAME']
 require "#{problem_home}/script/test_dsl.rb"
 load "#{problem_home}/test_cases/all_tests.cfg"
 problem = Problem.get_instance
+
+sandbox_dir = Dir.getwd
 
 if problem.well_formed? == false
   log "The problem specification is not well formed."
@@ -81,16 +84,42 @@ end
 
 # Hide PROBLEM_HOME
 ENV['PROBLEM_HOME'] = nil
+ENV['SOURCE_NAME'] = nil
 
 # Run the program.
 #run_command = "/usr/bin/time -f \"#{time_output_format}\" 2>run_result #{problem_home}/script/box_new -a 2 -f -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name}"
+#
 
-run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name} 2>run_result"
+JAVA_OPTION = "-s set_robust_list -s futex -s clone -s getppid -s clone -s wait4 -p /usr/bin/ -p ./"
+RUBY_OPTION   = "-p /usr/lib64/ -p /usr/local/lib64/ -p /usr/local/lib/ -p /lib64/ -p /dev/urandom -p #{sandbox_dir}/#{program_name} -p #{sandbox_dir}/ -s set_robust_list -s sched_getaffinity -s clock_gettime -s sigaltstack -s pipe2 -s clone -s futex -s openat -s pipe"
+PYTHON_OPTION = "-p /usr/lib64/ -p /usr/local/lib64/ -p /usr/local/lib/ -p /usr/bin/ -p /lib64/ -p #{sandbox_dir}/#{program_name} -p ./#{program_name} -p #{sandbox_dir}/#{source_name} -s set_robust_list -s openat -s recvmsg -s connect -s socket -s sendto -s futex -E PYTHONNOUSERSITE=yes"
+PHP_OPTION = "-p /usr/lib64/ -p/lib64/ -p /usr/bin/ -p #{sandbox_dir}/#{program_name} -p ./#{program_name} -p /usr/share/ -s setfsuid -s setfsgid -s openat -s set_robust_list -s futex -s clone -s socket -s connect"
+
+case language
+  when "java"
+    # for java, extract the classname
+    # wne have to add additional systemcall and we don't check the mem limit (dunno how to fix...)
+    classname = 'DUMMY'
+    File.open(program_name,"r").each do |line|
+      classname = line
+    end
+    #for java, we cannot really check the memory limit...
+    run_command = "#{problem_home}/script/box -a 3 -f -T -t #{time_limit} #{JAVA_OPTION} -i #{input_file_name} -o output.txt /usr/bin/java -A -Xmx#{mem_limit}k -A #{classname} "
+  when "ruby"
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{mem_limit} #{RUBY_OPTION} -i #{input_file_name} -o output.txt /usr/bin/ruby #{program_name} "
+  when "python"
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{mem_limit} #{PYTHON_OPTION} -i #{input_file_name} -o output.txt /usr/bin/python #{program_name} "
+  when "php"
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{[128*1024,mem_limit].max} #{PHP_OPTION} -i #{input_file_name} -o output.txt /usr/bin/php -A -d -A memory_limit=#{mem_limit}k -A #{program_name} "
+  else # for c++, pascal, we do the normal checking
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name} "
+end
+
 
 log "Running test #{test_num}..."
 log run_command
-log 
-system(run_command)
+log
+system(run_command,err: 'run_result')
 
 # Restore PROBLEM_HOME
 ENV['PROBLEM_HOME'] = problem_home
@@ -132,12 +161,13 @@ report = lambda{ |status, points, comment|
   exit(0)  
 }
 
+
 if run_result[0][0,2] != "OK"
   log "There was a runtime error."
   report.call(run_result[0], 0, "No comment.\n")
 end
 
-if running_time[:user].to_f + running_time[:sys].to_f > time_limit
+if running_time[:user].to_f > time_limit
   log "Time limit exceeded."
   report.call("Time limit exceeded", 0, "No comment.\n")
 end

@@ -198,7 +198,7 @@ module Grader
       end
 
       # extract memory usage
-      if res = /s(.*)m/.match(running_stat_line)
+      if res = /s(.*)kbytes/.match(running_stat_line)
         memory_used = res[1].to_i
       else
         memory_used = -1
