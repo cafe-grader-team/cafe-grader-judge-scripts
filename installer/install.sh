@@ -2,7 +2,8 @@
 
 echo "This script will install and configure Cafe grader."
 
-echo "This will install Ruby 1.9.2 under rvm"
+RUBY_VERSION=2.1.2
+echo "This will install Ruby $RUBY_VERSION under RVM"
 
 echo "Installing required apts"
 
@@ -19,10 +20,10 @@ echo "Installing RVM"
 curl -k -L https://get.rvm.io | bash -s stable
 source ~/.rvm/scripts/rvm
 
-echo "Installing Ruby 2.1.2 in RVM"
+echo "Installing Ruby $RUBY_VERSION in RVM"
 
-rvm install 2.1.2
-rvm use 2.1.2
+rvm install $RUBY_VERSION
+rvm use $RUBY_VERSION
 
 echo "Fetching Cafe Grader from Git repositories"
 
@@ -160,10 +161,8 @@ echo "require File.dirname(__FILE__) + \"/env_#{GRADER_ENV}.rb\"" >> scripts/con
 MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
   gcc -std=c99 -o scripts/std-script/box scripts/std-script/box64-new.c
-  # 64-bit stuff here
 else
   g++ -o scripts/std-script/box scripts/std-script/box.cc
-  # 32-bit stuff here
 fi
 
 
