@@ -2,7 +2,7 @@
 
 echo "This script will install and configure Cafe grader."
 
-$RUBY_VERSION="2.1.2"
+RUBY_VERSION=2.1.2
 echo "This will install Ruby $RUBY_VERSION under RVM"
 
 echo "Installing required apts"
