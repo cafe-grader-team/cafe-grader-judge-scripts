@@ -2,7 +2,8 @@
 
 echo "This script will install and configure Cafe grader."
 
-echo "This will install Ruby 1.9.2 under rvm"
+RUBY_VERSION=2.1.2
+echo "This will install Ruby $RUBY_VERSION under RVM"
 
 echo "Installing required apts"
 
@@ -13,16 +14,16 @@ sudo apt-get install mysql-server mysql-client \
   zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev \
   sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev \
   ncurses-dev automake libtool bison subversion \
-  pkg-config curl nodejs unzip
+  pkg-config curl nodejs unzip pyflakes ruby default-jdk
 
 echo "Installing RVM"
 curl -k -L https://get.rvm.io | bash -s stable
-~/.rvm/scripts/rvm
+source ~/.rvm/scripts/rvm
 
-echo "Installing Ruby 1.9.2 in RVM"
+echo "Installing Ruby $RUBY_VERSION in RVM"
 
-rvm install 1.9.2
-rvm use 1.9.2
+rvm install $RUBY_VERSION
+rvm use $RUBY_VERSION
 
 echo "Fetching Cafe Grader from Git repositories"
 
@@ -36,6 +37,18 @@ echo "Configuring rails app"
 
 cp web/config/application.rb.SAMPLE web/config/application.rb
 cp web/config/initializers/cafe_grader_config.rb.SAMPLE web/config/initializers/cafe_grader_config.rb
+
+#replace UTC in application.rb with the system timezone
+timezone='UTC'
+if [ -f '/etc/timezone' ]; then
+  timezone=\"`cat /etc/timezone`\"
+else
+  if [ -f '/etc/sysconfig/clock' ]; then
+    timezone=`grep -e '^TIMEZONE' /etc/sysconfig/clock | grep -o -e '\".*\"'`
+  fi
+fi
+replace="s!'UTC'!$timezone!g"
+sed -i $replace web/config/application.rb
 
 echo "At this point we will need MySQL user and database."
 echo "Have you created MySQL user and database for Cafe grader? (Y/N) "
@@ -114,6 +127,10 @@ echo "Running rake tasks to initialize database"
 rake db:migrate
 rake db:seed
 
+echo "Running rake tasks to precompile the assets"
+
+rake assets:precompile
+
 echo "Intalling web interface complete..."
 echo
 echo "Fetching grader"
@@ -139,6 +156,15 @@ echo "RAILS_ROOT = '$CAFE_PATH/web'" > scripts/config/environment.rb
 echo "GRADER_ROOT = '$CAFE_PATH/judge/scripts'" >> scripts/config/environment.rb
 echo "require File.join(File.dirname(__FILE__),'../lib/boot')" >> scripts/config/environment.rb
 echo "require File.dirname(__FILE__) + \"/env_#{GRADER_ENV}.rb\"" >> scripts/config/environment.rb
+
+# compiling box
+MACHINE_TYPE=`uname -m`
+if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+  gcc -std=c99 -o scripts/std-script/box scripts/std-script/box64-new.c
+else
+  g++ -o scripts/std-script/box scripts/std-script/box.cc
+fi
+
 
 cd ..
 

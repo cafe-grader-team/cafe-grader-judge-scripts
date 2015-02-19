@@ -104,13 +104,13 @@ case language
       classname = line
     end
     #for java, we cannot really check the memory limit...
-    run_command = "#{problem_home}/script/box -a 3 -f -T -t #{time_limit} #{JAVA_OPTION} -i #{input_file_name} -o output.txt /usr/bin/java #{classname} "
+    run_command = "#{problem_home}/script/box -a 3 -f -T -t #{time_limit} #{JAVA_OPTION} -i #{input_file_name} -o output.txt /usr/bin/java -A -Xmx#{mem_limit}k -A #{classname} "
   when "ruby"
     run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{mem_limit} #{RUBY_OPTION} -i #{input_file_name} -o output.txt /usr/bin/ruby #{program_name} "
   when "python"
     run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{mem_limit} #{PYTHON_OPTION} -i #{input_file_name} -o output.txt /usr/bin/python #{program_name} "
   when "php"
-    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} #{PHP_OPTION} -i #{input_file_name} -o output.txt /usr/bin/php #{program_name} "
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{[128*1024,mem_limit].max} #{PHP_OPTION} -i #{input_file_name} -o output.txt /usr/bin/php -A -d -A memory_limit=#{mem_limit}k -A #{program_name} "
   else # for c++, pascal, we do the normal checking
     run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit} -m #{mem_limit} -i #{input_file_name} -o output.txt #{program_name} "
 end

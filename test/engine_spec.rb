@@ -202,7 +202,7 @@ describe "A grader engine, when grading test requests" do
                     :grader_comment= => '',
                     :running_stat= => /0.0\d* sec./, 
                     :output_file_name= => lambda { |fname|
-                      File.exists?(fname).should be_true
+                      File.exists?(fname).should be true
                     },
                     :running_time= => nil,
                     :exit_status= => nil,
@@ -226,7 +226,7 @@ describe "A grader engine, when grading test requests" do
                     :exit_status= => nil,
                     :memory_usage= => nil,
                     :save => nil})
-    File.exists?(@config.user_result_dir + "/test_request/test_normal/test_cases/1/input-1.txt").should be_false
+    File.exists?(@config.user_result_dir + "/test_request/test_normal/test_cases/1/input-1.txt").should be false
   end
 
   it "should compile test request with error and report compilation error" do
@@ -255,7 +255,7 @@ describe "A grader engine, when grading test requests" do
                     :grader_comment= => '',
                     :running_stat= => /[Ee]xit.*status.*10.*0\.0\d* sec/m,
                     :output_file_name= => lambda { |fname|
-                      File.exists?(fname).should be_true
+                      File.exists?(fname).should be true
                     },
                     :running_time= => nil,
                     :exit_status= => /10/,
@@ -275,7 +275,7 @@ describe "A grader engine, when grading test requests" do
                     :grader_comment= => '',
                     :running_stat= => nil,
                     :output_file_name= => lambda { |fname|
-                      File.exists?(fname).should be_true
+                      File.exists?(fname).should be true
                     },
                     :running_time= => lambda { |t|
                       (t>=0.14) and (t<=0.16)
