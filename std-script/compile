@@ -28,7 +28,7 @@ CPLUSPLUS_COMPILER = "/usr/bin/g++"
 PASCAL_COMPILER = "/usr/bin/fpc"
 JAVA_COMPILER = "/usr/bin/javac"
 RUBY_INTERPRETER = "/usr/bin/ruby"
-PYTHON_INTERPRETER = "/usr/bin/python"
+PYTHON_INTERPRETER = "/usr/bin/python3"
 PYTHON_CHECKER = "/usr/bin/pyflakes"
 PHP_INTERPRETER = "/usr/bin/php"
 
@@ -148,7 +148,7 @@ when "python"
   command = "#{PYTHON_CHECKER} #{params[:source_file]}"
   if system(command, out: params[:message_file])
     #compile to python bytecode
-    command = "#{PYTHON_INTERPRETER} -m py_compile #{params[:source_file]}"
+    command = "#{PYTHON_INTERPRETER} -c \"import py_compile; py_compile.compile('#{params[:source_file]}','#{params[:source_file]}c');\""
     puts "compile: #{command}"
     system(command)
     puts "pwd: " + Dir.pwd
