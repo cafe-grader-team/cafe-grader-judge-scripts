@@ -92,7 +92,7 @@ ENV['SOURCE_NAME'] = nil
 
 JAVA_OPTION = "-s set_robust_list -s futex -s clone -s getppid -s clone -s wait4 -p /usr/bin/ -p ./"
 RUBY_OPTION   = "-p /usr/lib64/ -p /usr/local/lib64/ -p /usr/local/lib/ -p /lib64/ -p /dev/urandom -p #{sandbox_dir}/#{program_name} -p #{sandbox_dir}/ -s set_robust_list -s sched_getaffinity -s clock_gettime -s sigaltstack -s pipe2 -s clone -s futex -s openat -s pipe"
-PYTHON_OPTION = "-p /usr/lib64/ -p /usr/local/lib64/ -p /usr/local/lib/ -p /usr/bin/ -p /lib64/ -p #{sandbox_dir}/#{program_name} -p ./#{program_name} -p #{sandbox_dir}/#{source_name} -s set_robust_list -s openat -s recvmsg -s connect -s socket -s sendto -s futex -E PYTHONNOUSERSITE=yes"
+PYTHON_OPTION = "-p /usr/lib64/ -p /usr/local/lib64/ -p /usr/local/lib/ -p /usr/bin/ -p /lib64/ -p /dev/urandom -p /usr/ -p #{sandbox_dir}/#{program_name} -p ./#{program_name} -p #{sandbox_dir}/#{source_name} -s set_robust_list -s openat -s recvmsg -s connect -s socket -s sendto -s futex -s sigaltstack -E PYTHONNOUSERSITE=yes"
 PHP_OPTION = "-p /usr/lib64/ -p/lib64/ -p /usr/bin/ -p #{sandbox_dir}/#{program_name} -p ./#{program_name} -p /usr/share/ -s setfsuid -s setfsgid -s openat -s set_robust_list -s futex -s clone -s socket -s connect"
 
 case language
@@ -108,7 +108,7 @@ case language
   when "ruby"
     run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{mem_limit} #{RUBY_OPTION} -i #{input_file_name} -o output.txt /usr/bin/ruby #{program_name} "
   when "python"
-    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{mem_limit} #{PYTHON_OPTION} -i #{input_file_name} -o output.txt /usr/bin/python #{program_name} "
+    run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} -m #{mem_limit} #{PYTHON_OPTION} -i #{input_file_name} -o output.txt /usr/bin/python3 #{program_name} "
   when "php"
     run_command = "#{problem_home}/script/box -a 2 -f -T -t #{time_limit*=2} #{PHP_OPTION} -i #{input_file_name} -o output.txt /usr/bin/php #{program_name} "
   else # for c++, pascal, we do the normal checking
