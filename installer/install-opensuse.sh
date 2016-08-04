@@ -7,19 +7,15 @@ echo "This will install Ruby $RUBY_VERSION under RVM"
 
 echo "Installing required apts"
 
-sudo apt-get update
-sudo apt-get install mysql-server mysql-client \
-  g++ gcc apache2 libmysqlclient20 build-essential \
-  git-core openssl libreadline6 libreadline6-dev \
-  zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev \
-  sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev \
-  ncurses-dev automake libtool bison subversion \
-  pkg-config curl nodejs unzip pyflakes ruby default-jdk \
-  libmysqld-dev mercurial python-setuptools python-dev
+sudo zypper install  \
+  g++ gcc libmysqlclient18 build-essential \
+  git-core openssl libreadline6 libreadline6-devel \
+  zlib1g zlib1g-devel libssl37 libyaml-devel sqlite3-devel \
+  sqlite3 libxml2-devel libxslt-devel autoconf libc6-devel \
+  ncurses-devel automake libtool bison subversion \
+  pkg-config curl nodejs unzip pyflakes java-1_8_0-openjdk \
+  libmysqld-devel mercurial python-setuptools python-devel
 
-echo "Installing RVM"
-curl -k -L https://get.rvm.io | bash -s stable
-source ~/.rvm/scripts/rvm
 
 echo "Installing Ruby $RUBY_VERSION in RVM"
 
@@ -32,7 +28,8 @@ echo "Fetching web interface"
 
 mkdir cafe_grader
 cd cafe_grader
-git clone -q git://github.com/jittat/cafe-grader-web.git web
+#git clone -q git://github.com/jittat/cafe-grader-web.git web
+hg clone git+ssh://git@github.com/nattee/cafe-grader-web.git web
 
 echo "Configuring rails app"
 
@@ -101,7 +98,7 @@ echo "  pool: 5" >> config/database.yml
 echo "  username: $username" >> config/database.yml
 echo "  password: $password" >> config/database.yml
 echo "  host: localhost" >> config/database.yml
-echo "  socket: /var/run/mysqld/mysqld.sock" >> config/database.yml
+echo "  socket: /run/mysql/mysql.sock" >> config/database.yml
 echo "" >> config/database.yml
 echo "production:" >> config/database.yml
 echo "  adapter: mysql2" >> config/database.yml
@@ -112,7 +109,7 @@ echo "  pool: 5" >> config/database.yml
 echo "  username: $username" >> config/database.yml
 echo "  password: $password" >> config/database.yml
 echo "  host: localhost" >> config/database.yml
-echo "  socket: /var/run/mysqld/mysqld.sock" >> config/database.yml
+echo "  socket: /run/mysql/mysql.sock" >> config/database.yml
 
 echo "Object.instance_eval{remove_const :GRADER_ROOT_DIR}" >> config/initializers/cafe_grader_config.rb 
 echo "Object.instance_eval{remove_const :GRADING_RESULT_DIR}" >> config/initializers/cafe_grader_config.rb
@@ -140,7 +137,8 @@ cd ..
 
 mkdir judge
 cd judge
-git clone -q git://github.com/jittat/cafe-grader-judge-scripts.git scripts
+#git clone -q git://github.com/jittat/cafe-grader-judge-scripts.git scripts
+hg clone git+ssh://git@github.com/nattee/cafe-grader-judge-scripts.git scripts
 mkdir raw
 mkdir ev-exam
 mkdir ev
