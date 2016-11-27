@@ -15,7 +15,7 @@ sudo apt-get install mysql-server mysql-client \
   sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev \
   ncurses-dev automake libtool bison subversion \
   pkg-config curl nodejs unzip pyflakes ruby default-jdk \
-  libmysqld-dev mercurial python-setuptools python-dev
+  libmysqld-dev mercurial python-setuptools python-dev python3-numpy
 
 echo "Installing RVM"
 curl -k -L https://get.rvm.io | bash -s stable
