@@ -31,6 +31,7 @@ RUBY_INTERPRETER = "/usr/bin/ruby"
 PYTHON_INTERPRETER = "/usr/bin/python3"
 PYTHON_CHECKER = "/usr/bin/pyflakes"
 PHP_INTERPRETER = "/usr/bin/php"
+HASKELL_COMPILER = "/usr/bin/ghc"
 
 C_OPTIONS = "-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
 CPLUSPLUS_OPTIONS = "-O2 -s -std=c++11 -static -DCONTEST -lm -Wall"
@@ -38,6 +39,7 @@ PASCAL_OPTIONS = "-O1 -XS -dCONTEST"
 JAVA_OPTIONS = ""
 PYTHON_OPTIONS = ""
 PHP_OPTIONS = "-l"
+HASKELL_OPTIONS = ""
 
 # Check for the correct number of arguments. Otherwise, print usage.
 if ARGV.length == 0 or ARGV.length > 4
@@ -145,20 +147,22 @@ when "ruby"
   end
 
 when "python"
-  command = "#{PYTHON_CHECKER} #{params[:source_file]}"
-  if system(command, out: params[:message_file])
+  #command = "#{PYTHON_CHECKER} #{params[:source_file]}"
+  #if system(command, out: params[:message_file])
     #compile to python bytecode
     command = "#{PYTHON_INTERPRETER} -c \"import py_compile; py_compile.compile('#{params[:source_file]}','#{params[:source_file]}c');\""
     puts "compile: #{command}"
-    system(command)
-    puts "pwd: " + Dir.pwd
-    Dir.new('.').each {|file| puts file}
-    File.open(params[:output_file],"w") do |out_file|
-      out_file.puts "#!#{PYTHON_INTERPRETER} #{params[:source_file]}c"
+    system(command, err: params[:message_file])
+    if FileTest.exists?("#{params[:source_file]}c")
+      puts "pwd: " + Dir.pwd
+      Dir.new('.').each {|file| puts file}
+      File.open(params[:output_file],"w") do |out_file|
+        out_file.puts "#!#{PYTHON_INTERPRETER} #{params[:source_file]}c"
+      end
+      File.chmod(0755, params[:output_file])
+      FileUtils.cp("#{params[:source_file]}c",params[:output_file])
     end
-    File.chmod(0755, params[:output_file])
-    FileUtils.cp("#{params[:source_file]}c",params[:output_file])
-  end
+  #end
 
 when "php"
   command = "#{PHP_INTERPRETER} #{PHP_OPTIONS} #{params[:source_file]}"
@@ -171,6 +175,10 @@ when "php"
     end
     File.chmod(0755, params[:output_file])
   end
+
+when "haskell"
+  command = "#{HASKELL_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{HASKELL_OPTIONS}"
+  system(command, err: params[:message_file])
 
 else
   talk("ERROR: Invalid language specified!")
