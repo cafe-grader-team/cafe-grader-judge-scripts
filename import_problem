@@ -132,29 +132,29 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
   testrun_info.each do |testrun|
     tr_num += 1
     puts "testrun: #{tr_num}"
-    
+
     testrun.each do |testcase_info|
       testcase_num, testcase_fname = testcase_info
-      
+
       puts "copy #{testcase_fname} to #{testcase_num}"
-      
+
       create_dir_if_not_exists("#{problem_dir}/test_cases/#{testcase_num}")
       copy_testcase("#{testcase_dir}",testcase_fname,"#{problem_dir}/test_cases/#{testcase_num}",testcase_num)
-      
+
       num_testcases += 1
     end
   end
-  
+
   # generating all_tests.cfg
   puts "generating testcase config file"
-  
+
   template = File.open(SCRIPT_DIR + "/templates/all_tests.cfg.erb").read
   all_test_cfg = ERB.new(template)
-  
+
   cfg_file = File.open("#{problem_dir}/test_cases/all_tests.cfg","w")
   cfg_file.puts all_test_cfg.result binding
   cfg_file.close
-  
+
   # copy check script
   if res = /^wrapper:(.*)$/.match(check_script)
     # wrapper script
@@ -162,13 +162,13 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
     script_name = File.basename(check_script_fname)
     check_wrapper_template = File.open(SCRIPT_DIR + "/templates/check_wrapper").read
     check_wrapper = ERB.new(check_wrapper_template)
-    
+
     check_file = File.open("#{problem_dir}/script/check","w")
     check_file.puts check_wrapper.result binding
     check_file.close
-    
+
     File.chmod(0755,"#{problem_dir}/script/check")
-    
+
     FileUtils.cp("#{check_script_fname}", "#{problem_dir}/script/#{script_name}")
   else
     if File.exists?(SCRIPT_DIR + "/templates/check.#{check_script}")
@@ -178,24 +178,24 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
     end
     FileUtils.cp("#{check_script_fname}", "#{problem_dir}/script/check", :preserve => true)
   end
-  
+
   # generating test_request directory
   puts "generating test_request template"
   FileUtils.mkdir_p("#{ev_dir}/test_request/#{problem}/script")
   FileUtils.mkdir_p("#{ev_dir}/test_request/#{problem}/test_cases/1")
-  
+
   template = File.open(SCRIPT_DIR + "/templates/test_request_all_tests.cfg.erb").read
   test_request_all_test_cfg = ERB.new(template)
-  
+
   cfg_file = File.open("#{ev_dir}/test_request/#{problem}/test_cases/all_tests.cfg","w")
   cfg_file.puts test_request_all_test_cfg.result
   cfg_file.close
-  
+
   FileUtils.cp("#{SCRIPT_DIR}/templates/check_empty",
                "#{ev_dir}/test_request/#{problem}/script/check")
   FileUtils.cp("#{SCRIPT_DIR}/templates/answer-1.txt",
                "#{ev_dir}/test_request/#{problem}/test_cases/1")
-  
+
   puts "done"
 end
 
