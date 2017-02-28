@@ -53,7 +53,7 @@ if ARGV.length < 2 || ARGV.length > 4
 end
 
 language = ARGV[0]
-if language != "c" && language != "c++" && language != "pas" && language != "java" && language != "ruby" && language != "python" && language != "php"
+if language != "c" && language != "c++" && language != "pas" && language != "java" && language != "ruby" && language != "python" && language != "php" && language != "haskell"
   log "You specified a language that is not supported: #{language}."
   exit(127)
 end
@@ -139,6 +139,12 @@ end
     if language == "java" then Dir["#{test_result_dir}/*.class"].each { |file| FileUtils.cp(file,sandbox_dir)} end
     if language == "python" then Dir["#{test_result_dir}/*.pyc"].each { |file| FileUtils.cp(file,sandbox_dir)} end
   }
+
+  #additionally copy any extra .txt file
+  data_files = Dir[problem_home + '/*.txt']
+  data_files.each do |file|
+    FileUtils.cp(file,sandbox_dir)
+  end
 
   begin
     execute("#{problem_home}/script/run #{language} #{test_num} ", "Error occured during execution of the run script")
