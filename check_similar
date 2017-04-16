@@ -1,0 +1,93 @@
+#!/usr/bin/env ruby
+
+def config
+  Grader::Configuration.get_instance
+end
+
+def display_manual
+  puts <<USAGE
+Check similarity between submission
+using: check_similar sub1 sub2
+          -- or --
+       check_similar problem_name
+  sub1 and sub2   are submission IDs to be checked
+  problem_name    will check all submissions of the problem wit problem short name is 'problem_name'
+
+  The output are given as
+    sub1.login, sub1.id, sub1.point, sub2.login, sub2.id, sub2.point, similarity
+
+USAGE
+end
+
+def process_options_and_stop_file
+
+  # Process 'help' option
+  if (ARGV.length == 0) or ((ARGV.length==1) and (/help/.match(ARGV[0])))
+    display_manual
+    exit(0)
+  end
+
+  #default options
+  options = {
+    :dry_run => false,
+  }
+
+
+  if ARGV.length == 2
+    options[:sub1] = ARGV[0].to_i
+    options[:sub2] = ARGV[1].to_i
+  elsif ARGV.length == 1
+    options[:problem] = ARGV[0]
+  end
+
+
+  return options
+end
+
+def compare(sub1,sub2,full = sub1.problem.full_score)
+  dis = @jarow.getDistance(sub1.source, sub2.source)
+  puts [sub1.user.login,"##{sub1.id}",(sub1.points * 100.0 / full).to_i,
+        sub2.user.login,"##{sub2.id}",(sub2.points * 100.0 / full).to_i,
+        "#{dis * 100}%"].join(',')
+end
+
+#########################################
+# main program
+#########################################
+
+options = process_options_and_stop_file
+
+# load grader environment
+GRADER_ENV = 'grading'
+require File.join(File.dirname(__FILE__),'config/environment')
+
+# boot rails, to be able to use the active record
+RAILS_ENV = config.rails_env
+require RAILS_ROOT + '/config/environment'
+
+# load comparator
+require 'fuzzystringmatch'
+@jarow = FuzzyStringMatch::JaroWinkler.create( :native )
+
+if options[:problem]
+  p = Problem.where(name: options[:problem]).first
+  unless p
+    puts "cannot find problem #{options[:problem]}"
+    exit(0)
+  end
+  subs = Submission.where(problem: p)
+  full_score = p.full_score.to_i
+  subs.each.with_index do |s1,i|
+    puts "processing #{i+1} out of #{subs.length}"
+    subs.each do |s2|
+      if s1.user != s2.user
+        compare(s1,s2,full_score)
+      end
+    end
+  end
+else
+  sub1 = Submission.find(options[:sub1])
+  sub2 = Submission.find(options[:sub2])
+  compare(sub1,sub2)
+end
+
