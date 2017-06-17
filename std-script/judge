@@ -140,6 +140,12 @@ end
     if language == "python" then Dir["#{test_result_dir}/*.pyc"].each { |file| FileUtils.cp(file,sandbox_dir)} end
   }
 
+  #additionally copy any extra .txt file
+  data_files = Dir[problem_home + '/*.txt']
+  data_files.each do |file|
+    FileUtils.cp(file,sandbox_dir)
+  end
+
   begin
     execute("#{problem_home}/script/run #{language} #{test_num} ", "Error occured during execution of the run script")
   rescue

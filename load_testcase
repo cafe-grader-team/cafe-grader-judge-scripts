@@ -20,7 +20,7 @@ end
 def process_options_and_stop_file
 
   # Process 'help' option
-  if (ARGV.length==1) and (/help/.match(ARGV[0]))
+  if (ARGV.length == 0) or ((ARGV.length==1) and (/help/.match(ARGV[0])))
     display_manual
     exit(0)
   end
@@ -74,7 +74,7 @@ RAILS_ENV = config.rails_env
 require RAILS_ROOT + '/config/environment'
 
 if options[:all]
-  Problem.all.each { |prob| process_problem(prob,options[:all]) }
+  Problem.all.each { |prob| process_problem(prob,options[:dry_run]) }
 else
   ARGV.each do |name|
     prob = Problem.find_by(name: name)

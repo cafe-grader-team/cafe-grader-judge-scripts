@@ -8,7 +8,7 @@ end
 
 def rename_problem(old_problem_name, new_problem_name)
 
-  if valid_problem_name(new_problem_name)
+  unless valid_problem_name(new_problem_name)
     puts "Bad new problem name: #{new_problem_name}"
     return
   end
@@ -60,7 +60,7 @@ def valid_problem_name(name)
   if name.length==0:
       return false
   else
-    return !(/^[a-zA-Z0-9_\-]+$/ === name)
+    return (/^[a-zA-Z0-9_\-]+$/ === name)
   end
 end
 

@@ -145,6 +145,12 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
     end
   end
 
+  #also include any .txt files
+  Dir.glob("#{testcase_dir}/*.txt") do |file|
+    puts "copy data file #{file}"
+    FileUtils.cp(file,"#{problem_dir}")
+  end
+
   # generating all_tests.cfg
   puts "generating testcase config file"
 
