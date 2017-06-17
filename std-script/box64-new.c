@@ -603,6 +603,18 @@ static const char * const syscall_names[] = {
 /* 311 */ [ __NR_process_vm_writev ] = "process_vm_writev",
 /* 312 */ [ __NR_kcmp ] = "kcmp",
 /* 313 */ [ __NR_finit_module ] = "finit_module",
+/* 314 */ [ __NR_sched_setattr ] = "sched_setattr",
+/* 315 */ [ __NR_sched_getattr ] = "sched_getattr",
+/* 316 */ [ __NR_renameat2 ] = "renameat2",
+/* 317 */ [ __NR_seccomp ] = "seccomp",
+/* 318 */ [ __NR_getrandom ] = "getrandom",
+/* 319 */ [ __NR_memfd_create ] = "memfd_create",
+/* 320 */ [ __NR_kexec_file_load ] = "kexec_file_load",
+/* 321 */ [ __NR_bpf ] = "bpf",
+/* 322 */ [ __NR_execveat ] = "execveat",
+/* 323 */ [ __NR_userfaultfd ] = "userfaultfd",
+/* 324 */ [ __NR_membarrier ] = "membarrier",
+/* 325 */ [ __NR_mlock2 ] = "mlock2",
 };
 #define NUM_SYSCALLS ARRAY_SIZE(syscall_names)
 #define NUM_ACTIONS (NUM_SYSCALLS+64)
