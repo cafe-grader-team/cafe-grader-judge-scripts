@@ -127,6 +127,19 @@ echo "Object.instance_eval{remove_const :GRADING_RESULT_DIR}" >> config/initiali
 echo "GRADER_ROOT_DIR = '$CAFE_PATH/judge'" >> config/initializers/cafe_grader_config.rb
 echo "GRADING_RESULT_DIR = '$CAFE_PATH/judge/result'" >> config/initializers/cafe_grader_config.rb
 
+# setup secret file
+SECRET_A=`rake secret`
+SECRET_B=`rake secret`
+SECRET_C=`rake secret`
+echo "development:" > config/secrets.yml
+echo "  secret_key_base: '$SECRET_A'" >> config/secrets.yml
+echo "test:" >> config/secrets.yml
+echo "  secret_key_base: '$SECRET_B'" >> config/secrets.yml
+echo "production:" >> config/secrets.yml
+echo "  secret_key_base: '$SECRET_C'" >> config/secrets.yml
+ 
+
+
 echo "Installing required gems"
 gem install bundler
 bundle install
