@@ -1,14 +1,18 @@
 #!/bin/sh
 
+#installation script for cafe-grader, for ubuntu 16.04
+
 echo "This script will install and configure Cafe grader."
 
-RUBY_VERSION=2.1.2
+RUBY_VERSION=2.3.4
 echo "This will install Ruby $RUBY_VERSION under RVM"
 
 echo "Installing required apts"
 
+sudo apt-get install software-properties-common
+sudo apt-add-repository -y ppa:rael-gc/rvm
 sudo apt-get update
-sudo apt-get install mysql-server mysql-client \
+sudo apt-get install rvm mysql-server mysql-client \
   g++ gcc apache2 libmysqlclient20 build-essential \
   git-core openssl libreadline6 libreadline6-dev \
   zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev \
@@ -17,9 +21,13 @@ sudo apt-get install mysql-server mysql-client \
   pkg-config curl nodejs unzip pyflakes ruby default-jdk \
   libmysqld-dev mercurial python-setuptools python-dev python3-numpy
 
-echo "Installing RVM"
-curl -k -L https://get.rvm.io | bash -s stable
-source ~/.rvm/scripts/rvm
+#--- edited -- 
+#--- we now use rvm from ubuntu package ---
+#echo "Installing RVM"
+#curl -k -L https://get.rvm.io | bash -s stable
+#source ~/.rvm/scripts/rvm
+
+source /etc/profile.d/rvm.sh
 
 echo "Installing Ruby $RUBY_VERSION in RVM"
 
