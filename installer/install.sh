@@ -9,10 +9,8 @@ echo "This will install Ruby $RUBY_VERSION under RVM"
 
 echo "Installing required apts"
 
-sudo apt-get install software-properties-common
-sudo apt-add-repository -y ppa:rael-gc/rvm
 sudo apt-get update
-sudo apt-get install rvm mysql-server mysql-client \
+sudo apt-get install mysql-server mysql-client \
   g++ gcc apache2 libmysqlclient20 build-essential \
   git-core openssl libreadline6 libreadline6-dev \
   zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev \
@@ -21,13 +19,9 @@ sudo apt-get install rvm mysql-server mysql-client \
   pkg-config curl nodejs unzip pyflakes ruby default-jdk \
   libmysqld-dev mercurial python-setuptools python-dev python3-numpy
 
-#--- edited -- 
-#--- we now use rvm from ubuntu package ---
-#echo "Installing RVM"
-#curl -k -L https://get.rvm.io | bash -s stable
-#source ~/.rvm/scripts/rvm
-
-source /etc/profile.d/rvm.sh
+echo "Installing RVM"
+curl -k -L https://get.rvm.io | bash -s stable
+source ~/.rvm/scripts/rvm
 
 echo "Installing Ruby $RUBY_VERSION in RVM"
 
@@ -127,19 +121,6 @@ echo "Object.instance_eval{remove_const :GRADING_RESULT_DIR}" >> config/initiali
 echo "GRADER_ROOT_DIR = '$CAFE_PATH/judge'" >> config/initializers/cafe_grader_config.rb
 echo "GRADING_RESULT_DIR = '$CAFE_PATH/judge/result'" >> config/initializers/cafe_grader_config.rb
 
-# setup secret file
-SECRET_A=`rake secret`
-SECRET_B=`rake secret`
-SECRET_C=`rake secret`
-echo "development:" > config/secrets.yml
-echo "  secret_key_base: '$SECRET_A'" >> config/secrets.yml
-echo "test:" >> config/secrets.yml
-echo "  secret_key_base: '$SECRET_B'" >> config/secrets.yml
-echo "production:" >> config/secrets.yml
-echo "  secret_key_base: '$SECRET_C'" >> config/secrets.yml
- 
-
-
 echo "Installing required gems"
 gem install bundler
 bundle install
@@ -152,6 +133,17 @@ rake db:seed
 echo "Running rake tasks to precompile the assets"
 
 rake assets:precompile
+
+echo "setup the secret file"
+SECRET_A=`rake secret`
+SECRET_B=`rake secret`
+SECRET_C=`rake secret`
+echo "development:" > config/secrets.yml
+echo "  secret_key_base: '$SECRET_A'" >> config/secrets.yml
+echo "test:" >> config/secrets.yml
+echo "  secret_key_base: '$SECRET_B'" >> config/secrets.yml
+echo "production:" >> config/secrets.yml
+echo "  secret_key_base: '$SECRET_C'" >> config/secrets.yml
 
 echo "Intalling web interface complete..."
 echo
