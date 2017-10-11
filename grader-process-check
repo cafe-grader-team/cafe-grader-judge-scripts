@@ -1,6 +1,7 @@
 #!/bin/bash
-count=`ps aux | grep "cafe_grader" | grep "grader grading queue" | wc -l`
+count=`ps aux | grep "algo_grader" | grep "grader grading queue" | wc -l`
 if [ $count -lt 1 ]; then
-  cd /home/dae/cafe_grader/judge
-  /home/dae/.rvm/wrappers/ruby-2.3.0/ruby /home/dae/cafe_grader/judge/scripts/grader grading queue > /home/dae/grading.log &
+  cd /home/dae/algo_grader/judge
+  /home/dae/.rvm/wrappers/ruby-2.3.0/ruby /home/dae/algo_grader/judge/scripts/grader grading queue > /home/dae/grading.log &
 fi
+

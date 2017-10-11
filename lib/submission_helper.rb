@@ -140,7 +140,9 @@ module Grader
         #submission.grader_comment = 'FAILED: ' + comment
         submission.grader_comment = comment
       end
-      submission.compiler_message = result[:cmp_msg] or ''
+      
+      #very lazy trim the string
+      submission.compiler_message = result[:cmp_msg][0..60000] or ''
 
       if not @dry_run
         submission.save
