@@ -100,10 +100,12 @@ def count_testruns(testcase_dir, raw_prefix)
   end while true
 end
 
-def create_dir_if_not_exists(dir)
+def create_dir_if_not_exists(dir, options = {} )
   if ! FileTest.exists? dir
     FileUtils.mkdir(dir)
   end
+
+  FileUtils.rm_rf(Dir.glob("#{dir}/*")) if options[:clear]
 end
 
 def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, check_script, options)
@@ -121,7 +123,8 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
 
   create_dir_if_not_exists("#{problem_dir}")
   create_dir_if_not_exists("#{problem_dir}/script")
-  create_dir_if_not_exists("#{problem_dir}/test_cases")
+  create_dir_if_not_exists("#{problem_dir}/test_cases",clear: true)
+  # clear test cases directory
 
   puts "copying testcases"
 
