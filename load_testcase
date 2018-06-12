@@ -47,6 +47,9 @@ def process_problem(prob,dry_run = false)
     break unless File.exists? file_root
     input = File.read(file_root + "/input-#{num}.txt")
     answer = File.read(file_root + "/answer-#{num}.txt")
+    #we also remove carraige return
+    input.gsub!(/\r\n?/,"\n")
+    answer.gsub!(/\r\n?/,"\n")
     puts "  got test case ##{num} of size #{input.size} and #{answer.size}"
 
     #THIS IS JUST A  PLACE HOLDER

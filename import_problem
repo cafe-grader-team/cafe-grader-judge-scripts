@@ -32,8 +32,11 @@ def build_testrun_info_from_dir(num_testruns, importing_test_dir, raw_prefix='')
 end
 
 def copy_testcase(importing_test_dir,fname,dir,i)
-  FileUtils.cp("#{importing_test_dir}/#{fname}.in", "#{input_filename(dir,i)}")
-  FileUtils.cp("#{importing_test_dir}/#{fname}.sol", "#{answer_filename(dir,i)}")
+  #copy the file from importing dir and also remove carriage return
+  a = File.read("#{importing_test_dir}/#{fname}.in").gsub(/\r\n?/,"\n")
+  File.write("#{input_filename(dir,i)}",a)
+  b = File.read("#{importing_test_dir}/#{fname}.sol").gsub(/\r\n?/,"\n")
+  File.write("#{answer_filename(dir,i)}",b)
 end
 
 def process_options(options)
