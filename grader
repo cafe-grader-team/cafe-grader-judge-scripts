@@ -57,7 +57,8 @@ using: (1) grader
          the problem name must be specified by the next argument.
 
          additional options:
-            --all-sub    re-grade every submissions instead of just the latest submission of each user.
+            --all-sub      re-grade every submissions instead of just the latest submission of each user.
+	    --only-error   re-grade only submissions that are "error during grading"
 
   sub:   re-grader the specified submission.
          The submission ID to be re-graded must be specified by the next argument.
@@ -136,6 +137,7 @@ def process_options_and_stop_file
   end
 
   options[:all_sub] = (ARGV.delete('--all-sub') != nil)
+  options[:only_err] = (ARGV.delete('--only-error') != nil)
 
   options[:err_log] = (ARGV.delete('--err-log') != nil)
 

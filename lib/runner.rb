@@ -25,20 +25,24 @@ module Grader
     end
 
     def grade_problem(problem, options={})
+      user_index = 0
+      user_count = User.count
       User.find_each do |u|
-        puts "user: #{u.login}"
+        puts "user: #{u.login} (#{user_index}/#{user_count})"
+        user_index += 1
         if options[:user_conditions]!=nil
           con_proc = options[:user_conditions]
           next if not con_proc.call(u)
         end
         if options[:all_sub]
           Submission.where(user_id: u.id,problem_id: problem.id).find_each do |sub|
+            next if options[:only_err] and sub.grader_comment != 'error during grading'
             @engine.grade(sub)
           end
         else
           last_sub = Submission.find_last_by_user_and_problem(u.id,problem.id)
           if last_sub!=nil
-            @engine.grade(last_sub)
+            @engine.grade(last_sub) unless options[:only_err] and last_sub.grader_comment != 'error during grading'
           end
         end
       end

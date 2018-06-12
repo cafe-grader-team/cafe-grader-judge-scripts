@@ -1,0 +1,9 @@
+#!/bin/bash
+count=`ps aux | grep "algo_grader" | grep "grader grading queue" | wc -l`
+install_dir=/home/john/cafe_grader
+ruby_executable=/home/john/.rvm/wrappers/ruby-2.3.0/ruby
+if [ $count -lt 1 ]; then
+  cd $judge_dir/judge
+  $ruby_executable $install_dir/judge/scripts/grader grading queue > $install_dir/judge/grading.log &
+fi
+
