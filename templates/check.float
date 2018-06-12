@@ -47,6 +47,11 @@ report_wrong = lambda {
 
 ########### THIS IS FOR CHECKING FLOAT with EPSILON error ##########
 
+
+def is_float?(fl)
+  !!Float(fl) rescue false
+end
+
 EPSILON = 0.000001
 
 out_items = output_file_content.split
@@ -56,10 +61,14 @@ if out_items.length != ans_items.length
   report_wrong.call
 else
   out_items.length.times do |i|
-    out_value = out_items[i].to_f
-    ans_value = ans_items[i].to_f
-    if (out_value - ans_value).abs > EPSILON * [out_value.abs,ans_value.abs].max
-      report_wrong.call
+    if is_float?(out_items[i]) && is_float?(ans_items[i])
+      out_value = out_items[i].to_f
+      ans_value = ans_items[i].to_f
+      if (out_value - ans_value).abs > EPSILON * [out_value.abs,ans_value.abs].max
+        report_wrong.call
+      end
+    else
+      report_wrong.call if out_items[i] != ans_items[i]
     end
   end
   report_correct.call

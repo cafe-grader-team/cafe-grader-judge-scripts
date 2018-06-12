@@ -32,8 +32,11 @@ def build_testrun_info_from_dir(num_testruns, importing_test_dir, raw_prefix='')
 end
 
 def copy_testcase(importing_test_dir,fname,dir,i)
-  FileUtils.cp("#{importing_test_dir}/#{fname}.in", "#{input_filename(dir,i)}")
-  FileUtils.cp("#{importing_test_dir}/#{fname}.sol", "#{answer_filename(dir,i)}")
+  #copy the file from importing dir and also remove carriage return
+  a = File.read("#{importing_test_dir}/#{fname}.in").gsub(/\r\n?/,"\n")
+  File.write("#{input_filename(dir,i)}",a)
+  b = File.read("#{importing_test_dir}/#{fname}.sol").gsub(/\r\n?/,"\n")
+  File.write("#{answer_filename(dir,i)}",b)
 end
 
 def process_options(options)
@@ -100,10 +103,12 @@ def count_testruns(testcase_dir, raw_prefix)
   end while true
 end
 
-def create_dir_if_not_exists(dir)
+def create_dir_if_not_exists(dir, options = {} )
   if ! FileTest.exists? dir
     FileUtils.mkdir(dir)
   end
+
+  FileUtils.rm_rf(Dir.glob("#{dir}/*")) if options[:clear]
 end
 
 def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, check_script, options)
@@ -121,7 +126,8 @@ def import_problem(ev_dir, problem, testcase_dir, num_testruns, raw_prefix, chec
 
   create_dir_if_not_exists("#{problem_dir}")
   create_dir_if_not_exists("#{problem_dir}/script")
-  create_dir_if_not_exists("#{problem_dir}/test_cases")
+  create_dir_if_not_exists("#{problem_dir}/test_cases",clear: true)
+  # clear test cases directory
 
   puts "copying testcases"
 
