@@ -4,24 +4,7 @@
 
 echo "This script will install and configure Cafe grader."
 
-RUBY_VERSION=2.3.4
-echo "This will install Ruby $RUBY_VERSION under RVM"
-
-echo "Installing required apts"
-
-sudo apt-get update
-sudo apt-get install mysql-server mysql-client \
-  g++ gcc apache2 libmysqlclient20 build-essential \
-  git-core openssl libreadline6 libreadline6-dev \
-  zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev \
-  sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev \
-  ncurses-dev automake libtool bison subversion \
-  pkg-config curl nodejs unzip pyflakes ruby default-jdk \
-  libmysqld-dev mercurial python-setuptools python-dev python3-numpy
-
-echo "Installing RVM"
-curl -k -L https://get.rvm.io | bash -s stable
-source ~/.rvm/scripts/rvm
+RUBY_VERSION=2.3.7
 
 echo "Installing Ruby $RUBY_VERSION in RVM"
 
