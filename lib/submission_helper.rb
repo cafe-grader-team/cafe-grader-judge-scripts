@@ -4,17 +4,17 @@ module Grader
     def initialize
       @config = Grader::Configuration.get_instance
     end
-    
+
     def produce_grading_room(submission)
       user = submission.user
       problem = submission.problem
       grading_room = "#{@config.user_result_dir}/" + 
         "#{user.login}/#{problem.name}/#{submission.id}"
-      
+
       FileUtils.mkdir_p(grading_room)
       grading_room
     end
-    
+
     def find_problem_home(submission)
       problem = submission.problem
       "#{@config.problems_dir}/#{problem.name}"
@@ -30,7 +30,7 @@ module Grader
     def clean_up(submission)
     end
   end
-  
+
   class SubmissionReporter
     def initialize(options={})
       options = {:dry_run => false, :result_collector => nil}.merge(options)
@@ -38,7 +38,7 @@ module Grader
       @dry_run = options[:dry_run]
       @result_collector = options[:result_collector]
     end
-    
+
     def report(sub,test_result_dir)
       result = read_result(test_result_dir)
       if @result_collector
@@ -47,7 +47,7 @@ module Grader
       end
       save_result(sub,result)
     end
-    
+
     def report_error(sub,msg)
       save_result(sub,{:points => 0,
                     :comment => "Grading error: #{msg}" })
@@ -63,7 +63,7 @@ module Grader
       else
         cmp_msg = ""
       end
-      
+
       result_fname = "#{test_result_dir}/result"
       comment_fname = "#{test_result_dir}/comment"
       runstat_fname = "#{test_result_dir}/run_stat"
@@ -77,7 +77,7 @@ module Grader
           result = 0
           comment = "error reading result file."
         end
-          
+
         begin
           comment_file = File.open(comment_fname)
           comment += comment_file.readline.chomp
@@ -114,7 +114,7 @@ module Grader
         end
       end
     end
-    
+
     def save_result(submission,result)
       problem = submission.problem
       submission.graded_at = Time.now.gmtime
@@ -140,7 +140,7 @@ module Grader
         #submission.grader_comment = 'FAILED: ' + comment
         submission.grader_comment = comment
       end
-      
+
       #very lazy trim the string
       submission.compiler_message = result[:cmp_msg][0..60000] or ''
 
@@ -148,7 +148,7 @@ module Grader
         submission.save
       end
     end
-    
+
   end
-  
+
 end

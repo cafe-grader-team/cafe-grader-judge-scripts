@@ -24,6 +24,9 @@ module Grader
       return task
     end
 
+    # grade a specified problem for the latest submission of each user
+    # optionally, on all submission when options[:all_sub] is set
+    # optionally, only submission that has error (use when the problem itself has some problem)
     def grade_problem(problem, options={})
       user_index = 0
       user_count = User.count

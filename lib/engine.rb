@@ -9,7 +9,7 @@ module Grader
   # room_maker and reporter.
   #
   class Engine
-    
+
     attr_writer :room_maker
     attr_writer :reporter
 
@@ -27,7 +27,7 @@ module Grader
       @room_maker = options[:room_maker]
       @reporter = options[:reporter]
     end
-    
+
     # takes a submission, asks room_maker to produce grading directories,
     # calls grader scripts, and asks reporter to save the result
     def grade(submission)
@@ -77,17 +77,20 @@ module Grader
           raise "engine: No test data."
         end
 
+        # copy the source script, using lock
         dinit = DirInit::Manager.new(problem_home)
 
+        # lock the directory and copy the scripts
         dinit.setup do
           copy_log = copy_script(problem_home)
           save_copy_log(problem_home,copy_log)
         end
-      
+
         call_judge(problem_home,language,grading_dir,source_name)
 
         @reporter.report(submission,"#{grading_dir}/test-result")
 
+        # unlock the directory
         dinit.teardown do
           copy_log = load_copy_log(problem_home)
           clear_copy_log(problem_home)
@@ -103,19 +106,21 @@ module Grader
         Dir.chdir(current_dir)   # this is really important
       end
     end
-    
+
     protected
-    
+
     def talk(str)
       if @config.talkative
         puts str
       end
     end
 
+    #change directory to problem_home
+    #call the "judge" script
     def call_judge(problem_home,language,grading_dir,fname)
       ENV['PROBLEM_HOME'] = problem_home
       ENV['RUBYOPT'] = ''
-      
+
       talk grading_dir
       Dir.chdir grading_dir
       script_name = "#{problem_home}/script/judge"
@@ -129,6 +134,9 @@ module Grader
       GRADER_ROOT + '/std-script'
     end
 
+    #copy any script presented in std-script directory that is not in the problem_home
+    #this allow a problem setter to provide their own version for each script
+    #in case that they want to hack something
     def copy_script(problem_home)
       script_dir = "#{problem_home}/script"
       std_script_dir = get_std_script_dir
@@ -136,7 +144,7 @@ module Grader
       raise "engine: std-script directory not found" if !FileTest.exist?(std_script_dir)
 
       scripts = Dir[std_script_dir + '/*']
-      
+
       copied = []
 
       scripts.each do |s|
@@ -147,7 +155,7 @@ module Grader
           FileUtils.cp(s, "#{script_dir}", :preserve => true)
         end
       end
-      
+
       return copied
     end
 
@@ -162,7 +170,7 @@ module Grader
       end
       f.close
     end
-    
+
     def load_copy_log(problem_home)
       f = File.new(copy_log_filename(problem_home),"r")
       log = []
