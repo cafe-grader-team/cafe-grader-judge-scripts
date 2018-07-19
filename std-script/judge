@@ -158,6 +158,8 @@ log "JUDGE: Running each test case..."
     # do nothing
   end
 
+
+  #copy the output of run script to each test-result folder
   call_and_log("Cannot create directory #{test_result_dir}/#{test_num}") {
     FileUtils.mkdir "#{test_result_dir}/#{test_num}"
   }

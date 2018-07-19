@@ -78,6 +78,7 @@ module Grader
         end
 
         talk "ENGINE: grading dir at #{grading_dir} is created"
+        talk "ENGINE: located problem home at #{problem_home} is created"
 
         # copy the source script, using lock
         dinit = DirInit::Manager.new(problem_home)

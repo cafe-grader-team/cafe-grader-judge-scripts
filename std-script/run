@@ -1,5 +1,19 @@
 #!/usr/bin/env ruby
 
+##
+# This program should be run in the sandbox dir containing the compiled file 
+# (or source file for script language). It will call the sandbox program with
+# the given input and process the output of the sandbox
+#
+# If sandbox exit normally, this program will call the "check" script to do
+# scoring. Otherwise, it would record the error accordingly
+#
+# This program produces several file
+#  * result     - the result from check script
+#  * comment    - comment from sandbox
+#  * output     - output of the program
+#
+
 require 'fileutils'
 
 def log(str='')
@@ -29,6 +43,11 @@ def compile_box(source,bin)
   system("g++ #{source} -o #{bin}")
 end
 
+#------------------------------------------
+# MAIN
+#------------------------------------------
+
+#parse parameter
 if ARGV.length < 2 || ARGV.length > 3
   puts "Usage: run <language> <test-num> [<program-name>]"
   exit(127)
@@ -51,13 +70,13 @@ problem = Problem.get_instance
 sandbox_dir = Dir.getwd
 
 if problem.well_formed? == false
-  log "RUN: The problem specification is not well formed."
+  log "RUN: ERROR: The problem specification is not well formed."
   exit(127)
 end
 
 # Check if the test number is okay.
 if test_num <= 0 || test_num > problem.num_tests
-  log "RUN: You have specified a wrong test number."
+  log "RUN: ERROR: You have specified a wrong test number."
   exit(127)
 end
 
