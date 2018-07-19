@@ -1,6 +1,6 @@
 #
 # A runner drives the engine into various tasks.
-# 
+#
 
 module Grader
 
@@ -15,7 +15,7 @@ module Grader
       task = Task.get_inqueue_and_change_status(Task::STATUS_GRADING)
       if task!=nil 
         @grader_process.report_active(task) if @grader_process!=nil
-        
+
         submission = Submission.find(task.submission_id)
         @engine.grade(submission)
         task.status_complete!
@@ -52,7 +52,7 @@ module Grader
     end
 
     def grade_submission(submission)
-      puts "Submission: #{submission.id} by #{submission.try(:user).try(:full_name)}"
+      puts "RUNNER: grade submission: #{submission.id} by #{submission.try(:user).try(:full_name)}"
       @engine.grade(submission)
     end
 
@@ -60,7 +60,7 @@ module Grader
       test_request = TestRequest.get_inqueue_and_change_status(Task::STATUS_GRADING)
       if test_request!=nil 
         @grader_process.report_active(test_request) if @grader_process!=nil
-        
+
         @engine.grade(test_request)
         test_request.status_complete!
         @grader_process.report_inactive(test_request) if @grader_process!=nil

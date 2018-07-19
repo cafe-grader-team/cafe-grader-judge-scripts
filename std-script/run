@@ -51,13 +51,13 @@ problem = Problem.get_instance
 sandbox_dir = Dir.getwd
 
 if problem.well_formed? == false
-  log "The problem specification is not well formed."
+  log "RUN: The problem specification is not well formed."
   exit(127)
 end
 
 # Check if the test number is okay.
 if test_num <= 0 || test_num > problem.num_tests
-  log "You have specified a wrong test number."
+  log "RUN: You have specified a wrong test number."
   exit(127)
 end
 
@@ -119,8 +119,8 @@ case language
 end
 
 
-log "Running test #{test_num}..."
-log run_command
+log "RUN: Running test #{test_num}..."
+log "RUN: Run command = [#{run_command}]"
 log
 system(run_command,err: 'run_result')
 

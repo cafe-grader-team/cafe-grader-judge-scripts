@@ -77,6 +77,8 @@ module Grader
           raise "engine: No test data."
         end
 
+        talk "ENGINE: grading dir at #{grading_dir} is created"
+
         # copy the source script, using lock
         dinit = DirInit::Manager.new(problem_home)
 
@@ -84,7 +86,9 @@ module Grader
         dinit.setup do
           copy_log = copy_script(problem_home)
           save_copy_log(problem_home,copy_log)
+          talk "ENGINE: following std script is copied: #{copy_log.join ' '}"
         end
+
 
         call_judge(problem_home,language,grading_dir,source_name)
 
@@ -121,11 +125,10 @@ module Grader
       ENV['PROBLEM_HOME'] = problem_home
       ENV['RUBYOPT'] = ''
 
-      talk grading_dir
       Dir.chdir grading_dir
       script_name = "#{problem_home}/script/judge"
       cmd = "#{script_name} #{language} #{fname}"
-      talk "CMD: #{cmd}"
+      talk "ENGINE: Calling Judge at #{cmd}"
       warn "ERROR: file does not exists #{script_name}" unless File.exists? script_name
       system(cmd)
     end
