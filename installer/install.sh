@@ -4,12 +4,14 @@
 
 echo "This script will install and configure Cafe grader."
 
-RUBY_VERSION=2.3.7
+RUBY_VERSION=2.6.3
+RUBY_GEMSET=grader
 
 echo "Installing Ruby $RUBY_VERSION in RVM"
 
 rvm install $RUBY_VERSION
-rvm use $RUBY_VERSION
+
+rvm use $RUBY_VERSION@$RUBY_GEMSET
 
 echo "Fetching Cafe Grader from Git repositories"
 
@@ -17,7 +19,7 @@ echo "Fetching web interface"
 
 mkdir cafe_grader
 cd cafe_grader
-git clone -q git://github.com/cafe-grader-team/cafe-grader-web.git web
+hg clone git+ssh://git@github.com/nattee/cafe-grader-web.git web
 
 echo "Configuring rails app"
 
@@ -105,8 +107,9 @@ echo "GRADER_ROOT_DIR = '$CAFE_PATH/judge'" >> config/initializers/cafe_grader_c
 echo "GRADING_RESULT_DIR = '$CAFE_PATH/judge/result'" >> config/initializers/cafe_grader_config.rb
 
 echo "Installing required gems"
-gem install bundler
-bundle install
+#gem install bundler
+#bundle install
+bundle
 
 echo "Running rake tasks to initialize database"
 
@@ -136,7 +139,7 @@ cd ..
 
 mkdir judge
 cd judge
-git clone -q git://github.com/cafe-grader-team/cafe-grader-judge-scripts.git scripts
+hg clone -q git+ssh://git@github.com/nattee/cafe-grader-judge-scripts.git scripts
 mkdir raw
 mkdir ev-exam
 mkdir ev
