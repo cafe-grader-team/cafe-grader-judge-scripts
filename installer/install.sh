@@ -10,7 +10,6 @@ RUBY_GEMSET=grader
 echo "Installing Ruby $RUBY_VERSION in RVM"
 
 rvm install $RUBY_VERSION
-
 rvm use $RUBY_VERSION@$RUBY_GEMSET
 
 echo "Fetching Cafe Grader from Git repositories"
@@ -66,10 +65,6 @@ then
   read dummy
 fi
 
-CAFE_PATH=`pwd`
-
-cd web
-
 echo "Please provide grader database:"
 read database
 
@@ -78,6 +73,9 @@ read username
 
 echo "Please provide $username password:"
 read password
+
+CAFE_PATH=`pwd`
+cd web
 
 echo "development:" > config/database.yml
 echo "  adapter: mysql2" >> config/database.yml
