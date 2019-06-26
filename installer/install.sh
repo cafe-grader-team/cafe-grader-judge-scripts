@@ -18,7 +18,7 @@ echo "Fetching web interface"
 
 mkdir cafe_grader
 cd cafe_grader
-hg clone git+ssh://git@github.com/nattee/cafe-grader-web.git web
+git clone -q git://github.com/cafe-grader-team/cafe-grader-web.git web
 
 echo "Configuring rails app"
 
@@ -137,7 +137,7 @@ cd ..
 
 mkdir judge
 cd judge
-hg clone -q git+ssh://git@github.com/nattee/cafe-grader-judge-scripts.git scripts
+git clone -q git://github.com/cafe-grader-team/cafe-grader-judge-scripts.git scripts
 mkdir raw
 mkdir ev-exam
 mkdir ev
