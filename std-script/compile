@@ -67,8 +67,9 @@ PARAMS.each_key do |param_name|
   else
     params[param_name] = default
   end
-  talk "#{param_name}: #{params[param_name]}"
+  talk "COMPILE: param: #{param_name}: #{params[param_name]}"
 end
+talk "COMPILE: working dir = " + Dir.pwd
 
 # Remove any remaining output files or message files.
 if FileTest.exists? params[:output_file]
@@ -80,7 +81,7 @@ end
 
 # Check if the source file exists before attempt compiling.
 if !FileTest.exists? params[:source_file]
-  talk("ERROR: The source file does not exist!")
+  talk("COMPILE: ERROR: The source file does not exist!")
   open(params[:message_file],"w") do |f|
     f.puts "ERROR: The source file did not exist."
   end
@@ -91,19 +92,23 @@ if params[:prog_lang]=='cpp'
   params[:prog_lang] = 'c++'
 end
 
+
 # Compile.
 case params[:prog_lang]
 
 when "c"
   command = "#{C_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{C_OPTIONS}"
+  talk "COMPILE: compiling command [#{command}]"
   system(command, err: params[:message_file])
 
 when "c++"
   command = "#{CPLUSPLUS_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{CPLUSPLUS_OPTIONS}"
+  talk "COMPILE: compiling command [#{command}]"
   system(command, err: params[:message_file])
   
 when "pas"
   command = "#{PASCAL_COMPILER} #{params[:source_file]} -ooutpas #{PASCAL_OPTIONS}"
+  talk "COMPILE: compiling command [#{command}]"
   system(command,out: params[:message_file])
   FileUtils.mv("output", params[:output_file])
 
@@ -126,6 +131,7 @@ when "java"
   end
   #system("cp #{params[:source_file]} #{classname}.java")
   command = "#{JAVA_COMPILER} -encoding utf8 #{classname}.java"
+  talk "COMPILE: compiling command [#{command}]"
   system(command, err: params[:message_file])
   if File.exists?(classname + ".class")
     File.open(params[:output_file],"w") {|file| file.write("#{classname}")}
@@ -136,6 +142,7 @@ when "java"
 
 when "ruby"
   command = "#{RUBY_INTERPRETER} -c #{params[:source_file]}"
+  talk "COMPILE: compiling command [#{command}]"
   if system(command, err: params[:message_file])
     File.open(params[:output_file],"w") do |out_file|
       out_file.puts "#!#{RUBY_INTERPRETER}"
@@ -151,11 +158,9 @@ when "python"
   #if system(command, out: params[:message_file])
     #compile to python bytecode
     command = "#{PYTHON_INTERPRETER} -c \"import py_compile; py_compile.compile('#{params[:source_file]}','#{params[:source_file]}c');\""
-    puts "compile: #{command}"
+    talk "COMPILE: compiling command [#{command}]"
     system(command, err: params[:message_file])
     if FileTest.exists?("#{params[:source_file]}c")
-      puts "pwd: " + Dir.pwd
-      Dir.new('.').each {|file| puts file}
       File.open(params[:output_file],"w") do |out_file|
         out_file.puts "#!#{PYTHON_INTERPRETER} #{params[:source_file]}c"
       end
@@ -178,10 +183,11 @@ when "php"
 
 when "haskell"
   command = "#{HASKELL_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{HASKELL_OPTIONS}"
+  talk "COMPILE: compiling command [#{command}]"
   system(command, err: params[:message_file])
 
 else
-  talk("ERROR: Invalid language specified!")
+  talk("COMPILE: ERROR: Invalid language specified!")
   open(params[:message_file],"w") do |f|
     f.puts "ERROR: Invalid language specified!"
   end
@@ -190,7 +196,7 @@ end
 
 # Report success or failure.
 if FileTest.exists? params[:output_file]
-  talk "Compilation was successful!"    
+  talk "COMPILE: Compilation was successful!"
 else
-  talk "ERROR: Something was wrong during the compilation!"
+  talk "COMPILE: ERROR: Something was wrong during the compilation!"
 end

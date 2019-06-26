@@ -1,0 +1,12 @@
+#!/bin/bash
+install_dir=/home/john/cafe_grader
+ruby_executable=/home/john/.rvm/wrappers/ruby-2.3.0/ruby
+
+#check number of running grader
+count=`ps aux | grep $install_dir | grep "grader grading queue" | wc -l`
+
+#if there is no grader running, start a new one
+if [ $count -lt 1 ]; then
+  cd $install_dir/judge
+  $ruby_executable $install_dir/judge/scripts/grader grading queue > $install_dir/judge/grading.log &
+fi
