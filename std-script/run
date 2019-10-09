@@ -111,7 +111,7 @@ ENV['SOURCE_NAME'] = nil
 
 JAVA_OPTION = "-s set_robust_list -s futex -s clone -s getppid -s clone -s wait4 -p /usr/bin/ -p ./"
 RUBY_OPTION   = "-p /usr/lib64/ -p /usr/local/lib64/ -p /usr/local/lib/ -p /lib64/ -p /dev/urandom -p #{sandbox_dir}/#{program_name} -p #{sandbox_dir}/ -s set_robust_list -s sched_getaffinity -s clock_gettime -s sigaltstack -s pipe2 -s clone -s futex -s openat -s pipe -s getrandom"
-PYTHON_OPTION = "-p /usr/lib64/ -p /usr/local/lib64/ -p /usr/local/lib/ -p /usr/bin/ -p /lib64/ -p /dev/urandom -p /usr/ -p #{sandbox_dir}/#{program_name} -p ./#{program_name} -p #{sandbox_dir}/#{source_name} -p /proc/sys/crypto/fips_enabled -p /proc/self/status -p /proc/mounts -p /var/lib/dpkg/status -s statfs -s set_robust_list -s openat -s sysinfo -s recvmsg -s connect -s socket -s sendto -s futex -s sigaltstack -s getrandom -E PYTHONNOUSERSITE=yes"
+PYTHON_OPTION = "-p /usr/lib64/ -p /usr/local/lib64/ -p /usr/local/lib/ -p /usr/bin/ -p /lib64/ -p /dev/urandom -p /usr/ -p #{sandbox_dir}/#{program_name} -p ./#{program_name} -p #{sandbox_dir}/#{source_name} -p /proc/sys/crypto/fips_enabled -p /proc/self/status -p /proc/mounts -p /var/lib/dpkg/status -s statfs -s set_robust_list -s openat -s sysinfo -s recvmsg -s connect -s socket -s sendto -s futex -s sigaltstack -s getrandom -s prlimit64 -E PYTHONNOUSERSITE=yes"
 PHP_OPTION = "-p /usr/lib64/ -p/lib64/ -p /usr/bin/ -p #{sandbox_dir}/#{program_name} -p ./#{program_name} -p /usr/share/ -s setfsuid -s setfsgid -s openat -s set_robust_list -s futex -s clone -s socket -s connect"
 HASKELL_OPTION = "-s set_robust_list -s clock_gettime -s sysinfo -s timer_create -s timer_settime -s futex -s timer_delete"
 
